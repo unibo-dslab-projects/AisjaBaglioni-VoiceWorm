@@ -5,10 +5,12 @@ import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
 import { computed } from 'vue';
 
-const userText = ref("X:1\nT:Example\nK:Bb\nDCDE|DCDE|DCDE|DCDE|\n");
+const userText = ref("X:1\nT:Example\nK:Bb\nDCDE|DCDE|DCDE|DCDE|DCDE|DCDE|DCDE|DCDE|\n");
 const renderedText = ref(null);
 const synth = ref(null);
-const scrollbarLeft = ref(10);
+const scrollbarLeft = ref(null);
+const scrollbarTop = ref(null);
+const scrollbarHeight = ref(null);
 let timer = null; 
 
 onMounted(() => {
@@ -16,7 +18,7 @@ onMounted(() => {
 });
 
 function renderScore() {
-  renderedText.value = abcjs.renderAbc("target", userText.value);
+  renderedText.value = abcjs.renderAbc("target", userText.value, { staffwidth: 740, wrap: {minSpacing: 1.8, maxSpacing: 2.7, preferredMeasuresPerLine: 6 }});
 }
 
 async function play() {
@@ -24,6 +26,7 @@ async function play() {
     synth.value.stop();
     timer.stop();
   }
+
 
   synth.value = new abcjs.synth.CreateSynth();
   const visualObj1 = renderedText.value[0];
@@ -33,11 +36,13 @@ eventCallback: ev => {
   if (ev && ev.left !== undefined) {
     nextTick(() => {
       scrollbarLeft.value = Math.round(ev.left);
+      scrollbarTop.value = Math.round(ev.top);
+      scrollbarHeight.value = Math.round(ev.height);
     });
   }
 }
   });
-
+  
   await synth.value.init({
     visualObj: renderedText.value[0],
     options: {
@@ -49,10 +54,8 @@ eventCallback: ev => {
   synth.value.start();
 
   timer.start(synth.value.audioContext);
-  
+
 }
-
-
 
 
 </script>
@@ -68,7 +71,7 @@ eventCallback: ev => {
       </div>
     <div id="container">
       <div id="target"></div>
-      <div id="scrollbar" :style="{ left: scrollbarLeft + 'px' }"></div>
+      <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
     </div>
   </div>
 
@@ -102,18 +105,15 @@ eventCallback: ev => {
   position: relative;
   width: fit-content;
   min-height: 50px;
-  padding: 10px;
   border: 1px solid #ddd;
   background-color: white;
 }
 
 #scrollbar {
   position: absolute;
-  top: 10px;
-  bottom: 10px;
   width: 2px;
   background-color: rgba(255, 0, 0, 0.7);
-  transition: left 50ms linear;
+  transition: all 50ms linear;
   left: 10px;
   z-index: 10;
 }
