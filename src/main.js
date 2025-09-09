@@ -1,3 +1,4 @@
+import 'abcjs/abcjs-audio.css';
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
