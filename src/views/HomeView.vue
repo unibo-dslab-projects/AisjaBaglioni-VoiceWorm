@@ -1,33 +1,31 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, render } from 'vue';
 import abcjs from "abcjs";
 import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
 import { computed } from 'vue';
 
-const userText = ref("X:1\nT:Example\nK:Bb\nCDCD|\n");
+const userText = ref("X:1\nK:Bb\ncdcd|\n");
 const renderedText = ref(null);
 const synth = ref(null);
 const scrollbarLeft = ref(null);
 const scrollbarTop = ref(null);
 const scrollbarHeight = ref(null);
 const bpm = ref(120);
-const startNote = ref("C4");
 const NOTE_TO_SEMITONE = {
   "C": 0,
-  "C#": 1, "Db": 1,
   "D": 2,
-  "D#": 3, "Eb": 3,
   "E": 4,
   "F": 5,
-  "F#": 6, "Gb": 6,
   "G": 7,
-  "G#": 8, "Ab": 8,
   "A": 9,
-  "A#": 10, "Bb": 10,
   "B": 11
 };
 
+const startingNote = ref(0);
+const startingOctave = ref(4);
+const highestNote = ref(0);
+const highestOctave = ref(5);
 let timer = null; 
 
 onMounted(() => {
@@ -38,8 +36,6 @@ onMounted(() => {
 function renderScore() {
   var options = {add_classes: true, selectTypes: true, staffwidth: 740, wrap: {minSpacing: 1.8, maxSpacing: 2.7, preferredMeasuresPerLine: 6 }};
   renderedText.value = abcjs.renderAbc("target", userText.value, options);
-  console.log("Prima nota " + getFirstNote());
-  //console.log(renderedText.value[0])
 }
 
 // Fa partire il timer e il synth, e di conseguenza l'audio
@@ -76,97 +72,93 @@ eventCallback: ev => {
   synth.value.start();
 
   timer.start(synth.value.audioContext);
+}
 
-    console.log("Nuova nota di partenza " + startNote);
-    console.log("Differenza in semitoni:", getSemitoneDifference());
 
+//Nota più alta iniziale
+function getHighestNote(baseAbc) {
+  const visualObj = abcjs.renderAbc("*", baseAbc)[0];
+  const note_pitches = visualObj.lines[0].staff[0].voices[0];
+  const note_names = new Array();
+  const note_values = new Array();
+
+  for (let pitch of note_pitches) {
+    if (pitch.pitches){
+      note_names.push(pitch.pitches[0].name)
+      note_values.push(noteToMidi(pitch.pitches[0].name))
+    }
+  }
+  
+  return Math.max(...note_values);
 }
 
 function getFirstNote() {
   const visualObj = (renderedText.value)[0];
   const note_object = visualObj.lines[0].staff[0].voices[0][0]
-  let note_name = note_object.pitches[0].name.toUpperCase();
-  const note_pitch = note_object.pitches[0].pitch;
-  const note_octave = 4 + Math.floor((note_pitch) / 12); 
-  const note_accidental = note_object.pitches[0].accidental;
-  let accidental_symbol = "";
-  if (note_accidental === "sharp") {
-    note_name = note_name.slice(1);
-    accidental_symbol = "♯";
-  } else if (note_accidental === "flat") {
-    note_name = note_name.slice(1);
-    accidental_symbol = "♭";
-  } else if (note_accidental === "dblsharp") {
-    note_name = note_name.slice(1);
-    accidental_symbol = "𝄪";
-  } else if (note_accidental === "dblflat") {
-    note_name = note_name.slice(1);
-    accidental_symbol = "𝄫";
-  } else if (note_accidental === "natural") {
-    accidental_symbol = "♮";
-  }
-  const note_string = ""+note_name +accidental_symbol+note_octave;
-  return note_string;
+  let note_name = note_object.pitches[0].name;
+  return note_name;
 }
 
+//c è 5, C è su 4 -> , abbassano di 1 ottava -> ' alzano di un'ottava -> dopo la nota
+//^ -> diesis, ^^-> doppio diesis -> _ -> bemolle -> __ doppio bemolle -> = bequadro -> prima della nota
 function noteToMidi(noteString) {
-  const match = noteString.match(/^([A-Ga-g])([#b♯♭]?)(\d+)$/);
-  if (!match) return null;
-
-  let [, letter, accidental, octave] = match;
-  letter = letter.toUpperCase();
-  octave = parseInt(octave);
-
-  if (accidental === "♯") accidental = "#";
-  if (accidental === "♭") accidental = "b";
-
-  const semitone = NOTE_TO_SEMITONE[letter + (accidental || "")];
-  return (octave + 1) * 12 + semitone;
-}
-
-function getSemitoneDifference() {
-  const firstNote = getFirstNote();
-  const firstMidi = noteToMidi(firstNote);
-  const startMidi = noteToMidi(startNote.value);
-
-  if (firstMidi === null || startMidi === null) return null;
-
-  if (firstMidi > startMidi) {
-    return -(firstMidi-startMidi)
-  } else {
-    return (startMidi - firstMidi)
-  }
-}
-
-// funzione per trasporre e renderizzare
-function transposeAndRender() {
-  const interval = getSemitoneDifference();
-  if (interval === null) {
-    console.warn("Impossibile calcolare differenza in semitoni.");
-    return;
-  }
-
-  console.log("Intervallo da trasporre:", interval);
-
-  // trasponi il testo ABC
-  const transposedNotation = transposeABC(userText.value, interval);
-
-  // aggiorna il testo e renderizza
-  userText.value = transposedNotation;
-
-  const options = {
-    add_classes: true,
-    selectTypes: true,
-    staffwidth: 740,
-    wrap: { minSpacing: 1.8, maxSpacing: 2.7, preferredMeasuresPerLine: 6 }
+  let idx = 0;
+  const modSymbols = {
+    "^": 1,
+    "_": -1,
+    "=": 0
   };
+  let semitoneOffset = 0;
+  while (idx < noteString.length && modSymbols[noteString[idx]] !== undefined) {
+    semitoneOffset += modSymbols[noteString[idx]];
+    idx++;
+  }
+  if (idx >= noteString.length) return null;
+  let note = noteString[idx++];
+  let octave = null;
+  if (note.toUpperCase() == note) {
+    octave = 4;
+  } else {
+    octave = 5;
+  }
+  note = note.toUpperCase();
+  semitoneOffset += NOTE_TO_SEMITONE[note];
+  const octaveSymbols = {
+    ",": -1,
+    "'": 1
+  };
+  while (idx < noteString.length && octaveSymbols[noteString[idx]] !== undefined) {
+    octave += octaveSymbols[noteString[idx]];
+    idx++;
+  }
+  return (octave + 1) * 12 + semitoneOffset;
+}
 
-  renderedText.value = abcjs.renderAbc("target", userText.value, options);
+function inputToMidi(note, octave) {
+  return (parseInt(octave) + 1) * 12 + parseInt(note);
+}
 
-  console.log("Prima nota trasposta:", getFirstNote());
+function getSemitoneDifference(note1, note2) {
+  if (note1 === null || note2 === null) return null;
+
+  return (note2 - note1);
 }
 
 
+// Questa funzionerà quando funzionerà il resto
+function transposeAndRender() {
+  const startingInterval = getSemitoneDifference(noteToMidi(getFirstNote()), inputToMidi(startingNote.value, startingOctave.value));
+  const baseAbc = transposeABC(userText.value, startingInterval);
+  console.log(baseAbc);
+  var concatenedAbc = baseAbc;
+  const highestInterval = getSemitoneDifference(getHighestNote(baseAbc), inputToMidi(highestNote.value, highestOctave.value));
+  for (let i = 0; i < highestInterval; i++) {
+    var newPiece = transposeABC(baseAbc, i+1);
+    concatenedAbc += newPiece;
+  }
+  userText.value = concatenedAbc;
+  renderScore();
+}
 
 </script>
 
@@ -176,7 +168,8 @@ function transposeAndRender() {
       <h1>VoiceWorm</h1>
       <textarea class="text" v-model="userText"></textarea> <br>
       <div id="buttons">
-        <button type="button" @click="transposeAndRender">Enter</button>
+        <button type="button" @click="renderScore">Enter</button>
+        <button type="button" @click="transposeAndRender">Generate</button>
         <button type="button" @click="play">Play</button>
       </div>
       <div id="bpm-control">
@@ -198,10 +191,62 @@ function transposeAndRender() {
       step="1"
     />
 
-    <div id="transpose-control">
-  <label>Starting note: <input v-model="startNote" type="text" maxlength="2" /></label>
+    <div id="starting-control">
+    <label for="starting_note">Starting note: </label>
+    <select v-model="startingNote" name="starting_note" id="notes">
+      <option value="0">C</option>
+      <option value="1">C#/Db</option>
+      <option value="2">D</option>
+      <option value="3">D#/Eb</option>
+      <option value="4">E</option>
+      <option value="5">F</option>
+      <option value="6">F#/Gb</option>
+      <option value="7">G</option>
+      <option value="8">G#/Ab</option>
+      <option value="9">A</option>
+      <option value="10">A#/Bb</option>
+      <option value="11">B</option>
+    </select>
+      <label for="octaves"></label>
+    <select  v-model="startingOctave" name="octaves" id="octaves">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4" selected>4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+    </select>
   <!--<label>Highest note: <input v-model="highNote" type="text" maxlength="2" /></label>
   <label>Lowest note: <input v-model="lowNote" type="text" maxlength="2" /></label>-->
+</div>
+
+    <div id="highest-control">
+    <label for="highest_note">Highest note: </label>
+    <select v-model="highestNote" name="highest_note" id="notes">
+      <option value="0">C</option>
+      <option value="1">C#/Db</option>
+      <option value="2">D</option>
+      <option value="3">D#/Eb</option>
+      <option value="4">E</option>
+      <option value="5">F</option>
+      <option value="6">F#/Gb</option>
+      <option value="7">G</option>
+      <option value="8">G#/Ab</option>
+      <option value="9">A</option>
+      <option value="10">A#/Bb</option>
+      <option value="11">B</option>
+    </select>
+      <label for="highest-octave"></label>
+    <select  v-model="highestOctave" name="highest-octave" id="octaves">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5" selected>5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+    </select>
 </div>
 
       </div>
@@ -222,8 +267,8 @@ function transposeAndRender() {
   height: 100px;
 }
 
-#transpose-control {
-  padding: 20px;
+#starting-control, #highest-control {
+  padding: 10px;
 }
 
 #bpm-control {
