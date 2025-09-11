@@ -5,7 +5,7 @@ import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
 import { computed } from 'vue';
 
-const userText = ref("X:1\nK:D\ncdcd|\n");
+const userText = ref("X:1\nK:D\ncdcdz2z2|\n");
 const renderedText = ref(null);
 const synth = ref(null);
 const scrollbarLeft = ref(null);
@@ -58,6 +58,11 @@ onMounted(() => {
 function renderScore() {
   var options = {add_classes: true, selectTypes: true, staffwidth: 740, wrap: {minSpacing: 1.8, maxSpacing: 2.7, preferredMeasuresPerLine: 6 }};
   renderedText.value = abcjs.renderAbc("target", userText.value, options);
+}
+
+function resetToDefault(){
+  userText.value = "X:1\nK:D\ncdcdz2z2|\n";
+  renderScore();
 }
 
 // Fa partire il timer e il synth, e di conseguenza l'audio
@@ -277,6 +282,7 @@ function transposeAndRender() {
         <button type="button" @click="renderScore">Enter</button>
         <button type="button" @click="transposeAndRender">Generate</button>
         <button type="button" @click="play">Play</button>
+        <button type="button" @click="resetToDefault">Reset</button>
       </div>
       <div id="bpm-control">
         <label for="bpm">BPM: </label>
