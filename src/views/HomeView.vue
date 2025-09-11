@@ -5,22 +5,44 @@ import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
 import { computed } from 'vue';
 
-const userText = ref("X:1\nK:Bb\ncdcd|\n");
+const userText = ref("X:1\nK:D\ncdcd|\n");
 const renderedText = ref(null);
 const synth = ref(null);
 const scrollbarLeft = ref(null);
 const scrollbarTop = ref(null);
 const scrollbarHeight = ref(null);
 const bpm = ref(120);
+const NOTE_REGEX = /[\^_=]*[A-Ga-g][,']*/g;
 const NOTE_TO_SEMITONE = {
   "C": 0,
+  "^C": 1,
   "D": 2,
+  "^D": 3,
   "E": 4,
   "F": 5,
+  "^F": 6,
   "G": 7,
+  "^G": 8,
   "A": 9,
+  "^A": 10,
   "B": 11
 };
+
+const SEMITONE_TO_NOTE = {
+  0: "C",
+  1: "^C",
+  2: "D",
+  3: "^D",
+  4: "E",
+  5: "F",
+  6: "^F",
+  7: "G",
+  8: "^G",
+  9: "A",
+  10: "^A",
+  11: "B"
+}
+
 
 const startingNote = ref(0);
 const startingOctave = ref(4);
@@ -75,7 +97,7 @@ eventCallback: ev => {
 }
 
 
-//Nota più alta iniziale
+// Nota più alta dello spartito utente
 function getHighestNote(baseAbc) {
   const visualObj = abcjs.renderAbc("*", baseAbc)[0];
   const note_pitches = visualObj.lines[0].staff[0].voices[0];
@@ -85,13 +107,14 @@ function getHighestNote(baseAbc) {
   for (let pitch of note_pitches) {
     if (pitch.pitches){
       note_names.push(pitch.pitches[0].name)
-      note_values.push(noteToMidi(pitch.pitches[0].name))
+      note_values.push(noteToSemitones(pitch.pitches[0].name))
     }
   }
   
   return Math.max(...note_values);
 }
 
+// Prima nota dello spartito utente
 function getFirstNote() {
   const visualObj = (renderedText.value)[0];
   const note_object = visualObj.lines[0].staff[0].voices[0][0]
@@ -101,7 +124,8 @@ function getFirstNote() {
 
 //c è 5, C è su 4 -> , abbassano di 1 ottava -> ' alzano di un'ottava -> dopo la nota
 //^ -> diesis, ^^-> doppio diesis -> _ -> bemolle -> __ doppio bemolle -> = bequadro -> prima della nota
-function noteToMidi(noteString) {
+//Dalla nota, estrae il corrispondente semitono MIDI
+function noteToSemitones(noteString) {
   let idx = 0;
   const modSymbols = {
     "^": 1,
@@ -134,31 +158,113 @@ function noteToMidi(noteString) {
   return (octave + 1) * 12 + semitoneOffset;
 }
 
-function inputToMidi(note, octave) {
+//Trasforma l'input delle select in semitoni MIDI
+function inputToSemitones(note, octave) {
   return (parseInt(octave) + 1) * 12 + parseInt(note);
 }
 
+//Calcola la differenza di semitoni
 function getSemitoneDifference(note1, note2) {
   if (note1 === null || note2 === null) return null;
 
   return (note2 - note1);
 }
 
+//Trova la stringa della nota a partire dal numero dei semitoni
+function semitonesToNote(semitones) {
+  let octave = (semitones / 12 | 0) - 5;
+  let pitch = semitones % 12;
+  let note = SEMITONE_TO_NOTE[pitch];
+  let modifiedNote = note;
+  if (octave < 0) {
+    for (let i = 0; i < Math.abs(octave); i++){
+      modifiedNote+=",";
+    }
+  } else if (octave == 1){
+    modifiedNote = note.toLowerCase();
+  } else if (octave > 1) {
+    modifiedNote = note.toLowerCase();
+    for (let i = 1; i < Math.abs(octave); i++){
+      modifiedNote+="'";
+    }
+  }
+  return modifiedNote;
+}
 
-// Questa funzionerà quando funzionerà il resto
+// Separa header e corpo del testo
+function splitAbcHeaderBody(abcString) {
+  const lines = abcString.split("\n");
+  const header = [];
+  const body = [];
+
+  let isBody = false;
+  for (let line of lines) {
+    if (line.startsWith("K:")) {
+      header.push(line);
+      isBody = true;
+    } else if (!isBody) {
+      header.push(line);
+    } else {
+      body.push(line);
+    }
+  }
+  return { header: header.join("\n"), body: body.join("\n") };
+}
+
+//Ottiene la chiave dall'header
+function getSheetKey(header) {
+  const match = header.match(/^K:([^\s]+)/m);
+  return match ? match[1] : null;
+}
+
+
+//Traspone una nota
+function transposeNote(noteString, step, key) {
+  const midi = noteToSemitones(noteString);
+  if (midi === null) return noteString; 
+  const newMidi = midi + step;
+  return semitonesToNote(newMidi);
+}
+
+
+//Traspone una stringa
+function transposeBody(string, step, key) {
+return string.replace(NOTE_REGEX, match => transposeNote(match, step, key));
+}
+
+//Concatena le stringhe per generare un nuovo spartito
 function transposeAndRender() {
-  const startingInterval = getSemitoneDifference(noteToMidi(getFirstNote()), inputToMidi(startingNote.value, startingOctave.value));
+  const startingInterval = getSemitoneDifference(noteToSemitones(getFirstNote()), inputToSemitones(startingNote.value, startingOctave.value));
+  const startingABC = transposeABC(userText.value, startingInterval); //Ritorna una stringa comprensiva della nuova chiave
+  const { header, body } = splitAbcHeaderBody(startingABC);
+  const key = getSheetKey(header);
+  const highestInterval = getSemitoneDifference(getHighestNote(startingABC), inputToSemitones(highestNote.value, highestOctave.value));
+  let concatenedAbc = startingABC;
+  for (let i = 0; i < highestInterval; i++) {
+    let newPiece = transposeBody(body, i+1, key);
+    concatenedAbc += newPiece;
+  }
+  userText.value = concatenedAbc;
+  renderScore();
+}
+
+//ABANDONED
+// Sta creando un nuovo brano a ogni trasposizione
+// Deve invece concatenare delle stringhe su un unico brano
+// Devo avere una funzione parser che mi aumenti i semitoni sulla base della grammatica interna di abcNotation
+// NON CANCELLARE
+/*function transposeAndRender1() {
+  const startingInterval = getSemitoneDifference(noteToSemitones(getFirstNote()), inputToSemitones(startingNote.value, startingOctave.value));
   const baseAbc = transposeABC(userText.value, startingInterval);
-  console.log(baseAbc);
   var concatenedAbc = baseAbc;
-  const highestInterval = getSemitoneDifference(getHighestNote(baseAbc), inputToMidi(highestNote.value, highestOctave.value));
+  const highestInterval = getSemitoneDifference(getHighestNote(baseAbc), inputToSemitones(highestNote.value, highestOctave.value));
   for (let i = 0; i < highestInterval; i++) {
     var newPiece = transposeABC(baseAbc, i+1);
     concatenedAbc += newPiece;
   }
   userText.value = concatenedAbc;
   renderScore();
-}
+}*/
 
 </script>
 
@@ -166,7 +272,7 @@ function transposeAndRender() {
   <main>
     <div id="page">
       <h1>VoiceWorm</h1>
-      <textarea class="text" v-model="userText"></textarea> <br>
+      <textarea id="exerciseInput" class="text" v-model="userText"></textarea> <br>
       <div id="buttons">
         <button type="button" @click="renderScore">Enter</button>
         <button type="button" @click="transposeAndRender">Generate</button>
@@ -193,7 +299,7 @@ function transposeAndRender() {
 
     <div id="starting-control">
     <label for="starting_note">Starting note: </label>
-    <select v-model="startingNote" name="starting_note" id="notes">
+    <select v-model="startingNote" name="starting_note" id="starting_note">
       <option value="0">C</option>
       <option value="1">C#/Db</option>
       <option value="2">D</option>
@@ -223,7 +329,7 @@ function transposeAndRender() {
 
     <div id="highest-control">
     <label for="highest_note">Highest note: </label>
-    <select v-model="highestNote" name="highest_note" id="notes">
+    <select v-model="highestNote" name="highest_note" id="highest_note">
       <option value="0">C</option>
       <option value="1">C#/Db</option>
       <option value="2">D</option>
@@ -238,7 +344,7 @@ function transposeAndRender() {
       <option value="11">B</option>
     </select>
       <label for="highest-octave"></label>
-    <select  v-model="highestOctave" name="highest-octave" id="octaves">
+    <select  v-model="highestOctave" name="highest-octave" id="highest-octave">
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
