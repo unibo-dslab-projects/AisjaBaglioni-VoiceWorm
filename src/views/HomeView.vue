@@ -3,14 +3,18 @@ import { onMounted, ref } from 'vue';
 import abcjs from "abcjs";
 import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
-import { jsPDF } from "jspdf";
 
+//Testo scritto dall'utente
 const userText = ref("X:1\nK:D\ncdcdz2z2|\n");
+//Testo renderizzato da abc
 const renderedText = ref(null);
+//Synth controller
 const synth = ref(null);
+//Dimensione e posizione della scrollbar
 const scrollbarLeft = ref(null);
 const scrollbarTop = ref(null);
 const scrollbarHeight = ref(null);
+//BPM e conversioni tra note e pitch
 const bpm = ref(120);
 const NOTE_REGEX = /[\^_=]*[A-Ga-g][,']*/g;
 const NOTE_TO_SEMITONE = {
@@ -43,57 +47,23 @@ const SEMITONE_TO_NOTE = {
   11: "B"
 }
 
-const keyAccidentals = {
-  // Tonalità maggiori
-  "C": [], "Cmajor": [],
-  "G": ["F#"], "Gmajor": ["F#"],
-  "D": ["F#", "C#"], "Dmajor": ["F#", "C#"],
-  "A": ["F#", "C#", "G#"], "Amajor": ["F#", "C#", "G#"],
-  "E": ["F#", "C#", "G#", "D#"], "Emajor": ["F#", "C#", "G#", "D#"],
-  "B": ["F#", "C#", "G#", "D#", "A#"], "Bmajor": ["F#", "C#", "G#", "D#", "A#"],
-  "F#": ["F#", "C#", "G#", "D#", "A#", "E#"], "F#major": ["F#", "C#", "G#", "D#", "A#", "E#"],
-  "C#": ["F#", "C#", "G#", "D#", "A#", "E#", "B#"], "C#major": ["F#", "C#", "G#", "D#", "A#", "E#", "B#"],
-
-  "F": ["Bb"], "Fmajor": ["Bb"],
-  "Bb": ["Bb", "Eb"], "Bbmajor": ["Bb", "Eb"],
-  "Eb": ["Bb", "Eb", "Ab"], "Ebmajor": ["Bb", "Eb", "Ab"],
-  "Ab": ["Bb", "Eb", "Ab", "Db"], "Abmajor": ["Bb", "Eb", "Ab", "Db"],
-  "Db": ["Bb", "Eb", "Ab", "Db", "Gb"], "Dbmajor": ["Bb", "Eb", "Ab", "Db", "Gb"],
-  "Gb": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb"], "Gbmajor": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb"],
-  "Cb": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"], "Cbmajor": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"],
-
-  // Tonalità minori
-  "Am": [], "Aminor": [],
-  "Em": ["F#"], "Eminor": ["F#"],
-  "Bm": ["F#", "C#"], "Bminor": ["F#", "C#"],
-  "F#m": ["F#", "C#", "G#"], "F#minor": ["F#", "C#", "G#"],
-  "C#m": ["F#", "C#", "G#", "D#"], "C#minor": ["F#", "C#", "G#", "D#"],
-  "G#m": ["F#", "C#", "G#", "D#", "A#"], "G#minor": ["F#", "C#", "G#", "D#", "A#"],
-  "D#m": ["F#", "C#", "G#", "D#", "A#", "E#"], "D#minor": ["F#", "C#", "G#", "D#", "A#", "E#"],
-  "A#m": ["F#", "C#", "G#", "D#", "A#", "E#", "B#"], "A#minor": ["F#", "C#", "G#", "D#", "A#", "E#", "B#"],
-
-  "Dm": ["Bb"], "Dminor": ["Bb"],
-  "Gm": ["Bb", "Eb"], "Gminor": ["Bb", "Eb"],
-  "Cm": ["Bb", "Eb", "Ab"], "Cminor": ["Bb", "Eb", "Ab"],
-  "Fm": ["Bb", "Eb", "Ab", "Db"], "Fminor": ["Bb", "Eb", "Ab", "Db"],
-  "Bbm": ["Bb", "Eb", "Ab", "Db", "Gb"], "Bbminor": ["Bb", "Eb", "Ab", "Db", "Gb"],
-  "Ebm": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb"], "Ebminor": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb"],
-  "Abm": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"], "Abminor": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"],
-};
-
-
+//Parametri inseriti dall'utente nelle select - C4 e C5 default
 const startingNote = ref(0);
 const startingOctave = ref(4);
 const highestNote = ref(0);
 const highestOctave = ref(5);
+
+//Timer del synth, da resettare a ogni nuovo play
 let timer = null; 
 
 onMounted(() => {
   renderScore();
 });
 
-// Renderizza lo spartito all'avvio o quando premuto enter
+// Renderizza lo spartito all'avvio o quando richiesto
 async function renderScore() {
+  stopSynthAndTimer();
+
   var options = {
     add_classes: true,
     selectTypes: true,
@@ -101,13 +71,12 @@ async function renderScore() {
     wrap: { minSpacing: 1.8, maxSpacing: 2.7, preferredMeasuresPerLine: 6 }
   };
 
-  // Render ABC
   renderedText.value = abcjs.renderAbc("target", userText.value, options);
 
-  // Inizializza il synth
   if (synth.value) {
     synth.value.stop();
   }
+  
   synth.value = new abcjs.synth.CreateSynth();
   const visualObj = renderedText.value[0];
 
@@ -120,22 +89,36 @@ async function renderScore() {
 
 // Reset dello spartito
 function resetToDefault() {
+  stopSynthAndTimer();
   userText.value = "X:1\nK:D\ncdcdz2z2|\n";
   renderScore();
 }
+
+// Funzione che ferma il synth e il timer, e resetta la scrollbar
+function stopSynthAndTimer() {
+  if (synth.value) {
+    synth.value.stop();
+  }
+  if (timer) {
+    timer.stop();
+    timer = null;
+  }
+  scrollbarLeft.value = null;
+  scrollbarTop.value = null;
+  scrollbarHeight.value = null;
+}
+
 
 // Fa partire il timer e il synth, e di conseguenza l'audio
 function play() {
   if (!renderedText.value) return;
   
-  // Se non esiste un synth live, crealo
   if (!synth.value) {
     synth.value = new abcjs.synth.CreateSynth();
   }
 
   const visualObj = renderedText.value[0];
 
-  // Inizializza synth solo se non è già stato inizializzato
   if (!synth.value.isInitialized) {
     synth.value.init({
       visualObj,
@@ -146,15 +129,13 @@ function play() {
       });
     });
   } else {
-    // Se è già inizializzato, ferma eventuale timer e ricomincia
+
     if (timer) timer.stop();
     startTimingCallbacks(visualObj);
   }
 }
 
-// Funzione helper per TimingCallbacks e start synth
 function startTimingCallbacks(visualObj) {
-  // Imposta il timer
   timer = new abcjs.TimingCallbacks(visualObj, {
     qpm: bpm.value,
     eventCallback: ev => {
@@ -168,11 +149,9 @@ function startTimingCallbacks(visualObj) {
     }
   });
 
-  // Avvia la riproduzione
-  synth.value.prime().then(() => {
+  synth.value.prime()
     synth.value.start();
     timer.start(synth.value.audioContext);
-  });
 }
 
 
@@ -260,55 +239,6 @@ function downloadSvg() {
   URL.revokeObjectURL(url);
 }
 
-
-async function downloadPdf() {
-  const svgElements = document.querySelectorAll("#target svg");
-  if (!svgElements.length) return;
-
-  const pdf = new jsPDF({
-    orientation: "landscape",
-    unit: "pt"
-  });
-
-  const scale = 3; // aumenta la risoluzione
-
-  for (let i = 0; i < svgElements.length; i++) {
-    const svg = svgElements[i];
-
-    // Serializza SVG e crea un Blob
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(svgBlob);
-
-    // Carica SVG in immagine
-    const img = new Image();
-    img.src = url;
-
-    await new Promise((resolve) => {
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext("2d");
-
-        ctx.scale(scale, scale);
-        ctx.drawImage(img, 0, 0);
-
-        // Calcola dimensioni PDF mantenendo proporzioni
-        const pdfWidth = 800; // punti PDF
-        const pdfHeight = (canvas.height / canvas.width) * pdfWidth;
-
-        if (i > 0) pdf.addPage();
-        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, pdfHeight);
-
-        URL.revokeObjectURL(url);
-        resolve();
-      };
-    });
-  }
-
-  pdf.save("spartito.pdf");
-}
 
 
 
