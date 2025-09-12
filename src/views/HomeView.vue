@@ -1,9 +1,9 @@
 <script setup>
-import { onMounted, ref, render } from 'vue';
+import { onMounted, ref } from 'vue';
 import abcjs from "abcjs";
 import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
-import { computed } from 'vue';
+import { jsPDF } from "jspdf";
 
 const userText = ref("X:1\nK:D\ncdcdz2z2|\n");
 const renderedText = ref(null);
@@ -43,6 +43,44 @@ const SEMITONE_TO_NOTE = {
   11: "B"
 }
 
+const keyAccidentals = {
+  // Tonalità maggiori
+  "C": [], "Cmajor": [],
+  "G": ["F#"], "Gmajor": ["F#"],
+  "D": ["F#", "C#"], "Dmajor": ["F#", "C#"],
+  "A": ["F#", "C#", "G#"], "Amajor": ["F#", "C#", "G#"],
+  "E": ["F#", "C#", "G#", "D#"], "Emajor": ["F#", "C#", "G#", "D#"],
+  "B": ["F#", "C#", "G#", "D#", "A#"], "Bmajor": ["F#", "C#", "G#", "D#", "A#"],
+  "F#": ["F#", "C#", "G#", "D#", "A#", "E#"], "F#major": ["F#", "C#", "G#", "D#", "A#", "E#"],
+  "C#": ["F#", "C#", "G#", "D#", "A#", "E#", "B#"], "C#major": ["F#", "C#", "G#", "D#", "A#", "E#", "B#"],
+
+  "F": ["Bb"], "Fmajor": ["Bb"],
+  "Bb": ["Bb", "Eb"], "Bbmajor": ["Bb", "Eb"],
+  "Eb": ["Bb", "Eb", "Ab"], "Ebmajor": ["Bb", "Eb", "Ab"],
+  "Ab": ["Bb", "Eb", "Ab", "Db"], "Abmajor": ["Bb", "Eb", "Ab", "Db"],
+  "Db": ["Bb", "Eb", "Ab", "Db", "Gb"], "Dbmajor": ["Bb", "Eb", "Ab", "Db", "Gb"],
+  "Gb": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb"], "Gbmajor": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb"],
+  "Cb": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"], "Cbmajor": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"],
+
+  // Tonalità minori
+  "Am": [], "Aminor": [],
+  "Em": ["F#"], "Eminor": ["F#"],
+  "Bm": ["F#", "C#"], "Bminor": ["F#", "C#"],
+  "F#m": ["F#", "C#", "G#"], "F#minor": ["F#", "C#", "G#"],
+  "C#m": ["F#", "C#", "G#", "D#"], "C#minor": ["F#", "C#", "G#", "D#"],
+  "G#m": ["F#", "C#", "G#", "D#", "A#"], "G#minor": ["F#", "C#", "G#", "D#", "A#"],
+  "D#m": ["F#", "C#", "G#", "D#", "A#", "E#"], "D#minor": ["F#", "C#", "G#", "D#", "A#", "E#"],
+  "A#m": ["F#", "C#", "G#", "D#", "A#", "E#", "B#"], "A#minor": ["F#", "C#", "G#", "D#", "A#", "E#", "B#"],
+
+  "Dm": ["Bb"], "Dminor": ["Bb"],
+  "Gm": ["Bb", "Eb"], "Gminor": ["Bb", "Eb"],
+  "Cm": ["Bb", "Eb", "Ab"], "Cminor": ["Bb", "Eb", "Ab"],
+  "Fm": ["Bb", "Eb", "Ab", "Db"], "Fminor": ["Bb", "Eb", "Ab", "Db"],
+  "Bbm": ["Bb", "Eb", "Ab", "Db", "Gb"], "Bbminor": ["Bb", "Eb", "Ab", "Db", "Gb"],
+  "Ebm": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb"], "Ebminor": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb"],
+  "Abm": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"], "Abminor": ["Bb", "Eb", "Ab", "Db", "Gb", "Cb", "Fb"],
+};
+
 
 const startingNote = ref(0);
 const startingOctave = ref(4);
@@ -55,51 +93,223 @@ onMounted(() => {
 });
 
 // Renderizza lo spartito all'avvio o quando premuto enter
-function renderScore() {
-  var options = {add_classes: true, selectTypes: true, staffwidth: 740, wrap: {minSpacing: 1.8, maxSpacing: 2.7, preferredMeasuresPerLine: 6 }};
+async function renderScore() {
+  var options = {
+    add_classes: true,
+    selectTypes: true,
+    staffwidth: 740,
+    wrap: { minSpacing: 1.8, maxSpacing: 2.7, preferredMeasuresPerLine: 6 }
+  };
+
+  // Render ABC
   renderedText.value = abcjs.renderAbc("target", userText.value, options);
+
+  // Inizializza il synth
+  if (synth.value) {
+    synth.value.stop();
+  }
+  synth.value = new abcjs.synth.CreateSynth();
+  const visualObj = renderedText.value[0];
+
+  await synth.value.init({
+    visualObj: visualObj,
+    options: { qpm: bpm.value }
+  });
+
 }
 
-function resetToDefault(){
+// Reset dello spartito
+function resetToDefault() {
   userText.value = "X:1\nK:D\ncdcdz2z2|\n";
   renderScore();
 }
 
 // Fa partire il timer e il synth, e di conseguenza l'audio
-async function play() {
-  if (synth.value) {
-    synth.value.stop();
-    timer.stop();
+function play() {
+  if (!renderedText.value) return;
+  
+  // Se non esiste un synth live, crealo
+  if (!synth.value) {
+    synth.value = new abcjs.synth.CreateSynth();
   }
-  synth.value = new abcjs.synth.CreateSynth();
+
   const visualObj = renderedText.value[0];
 
-  timer = new abcjs.TimingCallbacks(visualObj, {
-    qpm: bpm.value,
-eventCallback: ev => {
-  if (ev && ev.left !== undefined) {
-    nextTick(() => {
-      scrollbarLeft.value = Math.round(ev.left);
-      scrollbarTop.value = Math.round(ev.top);
-      scrollbarHeight.value = Math.round(ev.height);
+  // Inizializza synth solo se non è già stato inizializzato
+  if (!synth.value.isInitialized) {
+    synth.value.init({
+      visualObj,
+      options: { qpm: bpm.value }
+    }).then(() => {
+      synth.value.prime().then(() => {
+        startTimingCallbacks(visualObj);
+      });
     });
+  } else {
+    // Se è già inizializzato, ferma eventuale timer e ricomincia
+    if (timer) timer.stop();
+    startTimingCallbacks(visualObj);
   }
 }
-  });
-  
-  await synth.value.init({
-    visualObj: renderedText.value[0],
-    options: {
-      qpm: bpm.value,
-      timingCallbacks: timer
+
+// Funzione helper per TimingCallbacks e start synth
+function startTimingCallbacks(visualObj) {
+  // Imposta il timer
+  timer = new abcjs.TimingCallbacks(visualObj, {
+    qpm: bpm.value,
+    eventCallback: ev => {
+      if (ev && ev.left !== undefined) {
+        nextTick(() => {
+          scrollbarLeft.value = Math.round(ev.left);
+          scrollbarTop.value = Math.round(ev.top);
+          scrollbarHeight.value = Math.round(ev.height);
+        });
+      }
     }
   });
 
-  synth.value.prime();
-  synth.value.start();
-
-  timer.start(synth.value.audioContext);
+  // Avvia la riproduzione
+  synth.value.prime().then(() => {
+    synth.value.start();
+    timer.start(synth.value.audioContext);
+  });
 }
+
+
+
+async function downloadWav() {
+  if (!renderedText.value) return;
+
+  // Creo un synth temporaneo separato
+  const tempSynth = new abcjs.synth.CreateSynth();
+
+  // Inizializza con il BPM corrente
+  await tempSynth.init({
+    visualObj: renderedText.value[0],
+    options: { qpm: bpm.value }
+  });
+
+  await tempSynth.prime(); // Calcola buffer audio
+
+  const audioBuffer = tempSynth.getAudioBuffer();
+
+  // Funzione per convertire AudioBuffer in WAV (stessa di prima)
+  function bufferToWave(abuffer) {
+    const numOfChan = abuffer.numberOfChannels;
+    const length = abuffer.length * numOfChan * 2 + 44;
+    const buffer = new ArrayBuffer(length);
+    const view = new DataView(buffer);
+
+    let offset = 0;
+    function writeString(s) {
+      for (let i = 0; i < s.length; i++) view.setUint8(offset++, s.charCodeAt(i));
+    }
+
+    const write16 = (data) => { view.setInt16(offset, data, true); offset += 2; };
+    const write32 = (data) => { view.setUint32(offset, data, true); offset += 4; };
+
+    writeString('RIFF'); write32(length - 8); writeString('WAVE');
+    writeString('fmt '); write32(16); write16(1); write16(numOfChan);
+    write32(abuffer.sampleRate); write32(abuffer.sampleRate * numOfChan * 2);
+    write16(numOfChan * 2); write16(16);
+    writeString('data'); write32(abuffer.length * numOfChan * 2);
+
+    for (let i = 0; i < abuffer.length; i++)
+      for (let channel = 0; channel < numOfChan; channel++) {
+        let sample = abuffer.getChannelData(channel)[i];
+        sample = Math.max(-1, Math.min(1, sample));
+        write16(sample < 0 ? sample * 0x8000 : sample * 0x7FFF);
+      }
+
+    return new Blob([buffer], { type: 'audio/wav' });
+  }
+
+  const wavBlob = bufferToWave(audioBuffer);
+
+  const url = URL.createObjectURL(wavBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'exercise.wav';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
+
+function downloadSvg() {
+  const svgElement = document.querySelector("#target svg");
+  if (!svgElement) return;
+
+  // Serializza l'SVG in stringa
+  const svgData = new XMLSerializer().serializeToString(svgElement);
+
+  // Crea un Blob e un URL temporaneo
+  const blob = new Blob([svgData], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(blob);
+
+  // Crea un link per il download
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "spartito.svg";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
+
+async function downloadPdf() {
+  const svgElements = document.querySelectorAll("#target svg");
+  if (!svgElements.length) return;
+
+  const pdf = new jsPDF({
+    orientation: "landscape",
+    unit: "pt"
+  });
+
+  const scale = 3; // aumenta la risoluzione
+
+  for (let i = 0; i < svgElements.length; i++) {
+    const svg = svgElements[i];
+
+    // Serializza SVG e crea un Blob
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+
+    // Carica SVG in immagine
+    const img = new Image();
+    img.src = url;
+
+    await new Promise((resolve) => {
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+
+        // Calcola dimensioni PDF mantenendo proporzioni
+        const pdfWidth = 800; // punti PDF
+        const pdfHeight = (canvas.height / canvas.width) * pdfWidth;
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pdfWidth, pdfHeight);
+
+        URL.revokeObjectURL(url);
+        resolve();
+      };
+    });
+  }
+
+  pdf.save("spartito.pdf");
+}
+
 
 
 // Nota più alta dello spartito utente
@@ -196,6 +406,24 @@ function semitonesToNote(semitones) {
   return modifiedNote;
 }
 
+//Trasforma una nota in notazione standard
+function abcNoteToStandard(noteString) {
+  const match = noteString.match(/^([_=^_]*)([a-gA-G])/);
+  if (!match) return null;
+
+  let [, accidental, letter] = match;
+  letter = letter.toUpperCase();
+
+  let result = letter;
+  if (accidental.includes("^")) {
+    result += "#".repeat(accidental.length); // ^, ^^ ecc.
+  } else if (accidental.includes("_")) {
+    result += "b".repeat(accidental.length); // _, __ ecc.
+  }
+  return result;
+}
+
+
 // Separa header e corpo del testo
 function splitAbcHeaderBody(abcString) {
   const lines = abcString.split("\n");
@@ -227,7 +455,7 @@ function getSheetKey(header) {
 function transposeNote(noteString, step, key) {
   const midi = noteToSemitones(noteString);
   if (midi === null) return noteString; 
-  const newMidi = midi + step;
+  let newMidi = midi + step;
   return semitonesToNote(newMidi);
 }
 
@@ -240,7 +468,7 @@ return string.replace(NOTE_REGEX, match => transposeNote(match, step, key));
 //Concatena le stringhe per generare un nuovo spartito
 function transposeAndRender() {
   const startingInterval = getSemitoneDifference(noteToSemitones(getFirstNote()), inputToSemitones(startingNote.value, startingOctave.value));
-  const startingABC = transposeABC(userText.value, startingInterval); //Ritorna una stringa comprensiva della nuova chiave
+  const startingABC = transposeABC(userText.value, startingInterval); // Ritorna una stringa comprensiva della nuova chiave
   const { header, body } = splitAbcHeaderBody(startingABC);
   const key = getSheetKey(header);
   const highestInterval = getSemitoneDifference(getHighestNote(startingABC), inputToSemitones(highestNote.value, highestOctave.value));
@@ -283,6 +511,8 @@ function transposeAndRender() {
         <button type="button" @click="transposeAndRender">Generate</button>
         <button type="button" @click="play">Play</button>
         <button type="button" @click="resetToDefault">Reset</button>
+        <button type="button" @click="downloadWav">Save WAV</button>
+        <button type="button" @click="downloadSvg">Save SVG</button>
       </div>
       <div id="bpm-control">
         <label for="bpm">BPM: </label>
