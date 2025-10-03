@@ -5,11 +5,13 @@ import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
 
 //Testo scritto dall'utente
-const userText = ref("X:1\nK:D\ncdcdz2z2|\n");
+const userText = ref("X:1\nK:C\ncdcdz2z2|\n");
 //Testo renderizzato da abc
 const renderedText = ref(null);
 //Synth controller
 const synth = ref(null);
+const isPaused = ref(false); 
+const currentTime = ref(0); 
 //Dimensione e posizione della scrollbar
 const scrollbarLeft = ref(null);
 const scrollbarTop = ref(null);
@@ -52,6 +54,8 @@ const startingNote = ref(0);
 const startingOctave = ref(4);
 const highestNote = ref(0);
 const highestOctave = ref(5);
+const lowestNote = ref(0);
+const lowestOctave = ref(3);
 
 //Timer del synth, da resettare a ogni nuovo play
 let timer = null; 
@@ -76,7 +80,7 @@ async function renderScore() {
   if (synth.value) {
     synth.value.stop();
   }
-  
+
   synth.value = new abcjs.synth.CreateSynth();
   const visualObj = renderedText.value[0];
 
@@ -89,8 +93,7 @@ async function renderScore() {
 
 // Reset dello spartito
 function resetToDefault() {
-  stopSynthAndTimer();
-  userText.value = "X:1\nK:D\ncdcdz2z2|\n";
+  userText.value = "X:1\nK:C\ncdcdz2z2|\n";
   renderScore();
 }
 
@@ -108,9 +111,28 @@ function stopSynthAndTimer() {
   scrollbarHeight.value = null;
 }
 
+function pauseSynthAndTimer() {
+  if (synth.value) {
+    synth.value.pause();
+  }
+    if (timer) {
+    timer.pause();
+  }
+}
+
+function resumeSynthAndTimer() {
+  if (synth.value) {
+    synth.value.start();
+  }
+  if (timer) {
+    timer.start();
+  }
+}
+
 
 // Fa partire il timer e il synth, e di conseguenza l'audio
 function play() {
+  stopSynthAndTimer();
   if (!renderedText.value) return;
   
   if (!synth.value) {
@@ -135,6 +157,8 @@ function play() {
   }
 }
 
+
+
 function startTimingCallbacks(visualObj) {
   timer = new abcjs.TimingCallbacks(visualObj, {
     qpm: bpm.value,
@@ -155,24 +179,21 @@ function startTimingCallbacks(visualObj) {
 }
 
 
-
+// Funzione che crea un audio buffer, lo converte in WAV, e crea un oggetto scaricabile dal blob
 async function downloadWav() {
   if (!renderedText.value) return;
 
-  // Creo un synth temporaneo separato
   const tempSynth = new abcjs.synth.CreateSynth();
 
-  // Inizializza con il BPM corrente
   await tempSynth.init({
     visualObj: renderedText.value[0],
     options: { qpm: bpm.value }
   });
 
-  await tempSynth.prime(); // Calcola buffer audio
+  await tempSynth.prime();
 
   const audioBuffer = tempSynth.getAudioBuffer();
 
-  // Funzione per convertire AudioBuffer in WAV (stessa di prima)
   function bufferToWave(abuffer) {
     const numOfChan = abuffer.numberOfChannels;
     const length = abuffer.length * numOfChan * 2 + 44;
@@ -217,18 +238,16 @@ async function downloadWav() {
 
 
 
+// Funzione che crea un SVG e lo rende scaricabile
 function downloadSvg() {
   const svgElement = document.querySelector("#target svg");
   if (!svgElement) return;
 
-  // Serializza l'SVG in stringa
   const svgData = new XMLSerializer().serializeToString(svgElement);
 
-  // Crea un Blob e un URL temporaneo
   const blob = new Blob([svgData], { type: "image/svg+xml" });
   const url = URL.createObjectURL(blob);
 
-  // Crea un link per il download
   const a = document.createElement("a");
   a.href = url;
   a.download = "spartito.svg";
@@ -242,7 +261,7 @@ function downloadSvg() {
 
 
 
-// Nota più alta dello spartito utente
+// Funzione che ottiene la nota più alta dello spartito inserito
 function getHighestNote(baseAbc) {
   const visualObj = abcjs.renderAbc("*", baseAbc)[0];
   const note_pitches = visualObj.lines[0].staff[0].voices[0];
@@ -259,7 +278,24 @@ function getHighestNote(baseAbc) {
   return Math.max(...note_values);
 }
 
-// Prima nota dello spartito utente
+// Funzione che ottiene la nota più alta dello spartito inserito
+function getLowestNote(baseAbc) {
+  const visualObj = abcjs.renderAbc("*", baseAbc)[0];
+  const note_pitches = visualObj.lines[0].staff[0].voices[0];
+  const note_names = new Array();
+  const note_values = new Array();
+
+  for (let pitch of note_pitches) {
+    if (pitch.pitches){
+      note_names.push(pitch.pitches[0].name)
+      note_values.push(noteToSemitones(pitch.pitches[0].name))
+    }
+  }
+  
+  return Math.min(...note_values);
+}
+
+// Funzione che ottiene la prima nota dello spartito -> vedrò se tenerlo generico o riferirmi allo spartito inserito
 function getFirstNote() {
   const visualObj = (renderedText.value)[0];
   const note_object = visualObj.lines[0].staff[0].voices[0][0]
@@ -267,9 +303,11 @@ function getFirstNote() {
   return note_name;
 }
 
-//c è 5, C è su 4 -> , abbassano di 1 ottava -> ' alzano di un'ottava -> dopo la nota
+//In abcjs le minuscole sono sulla quinta ottava, le maiuscole sulla quarta
+// c è su 5, C è su 4 -> "," abbassano di 1 ottava -> "'" alzano di un'ottava -> sono inseriti dopo la nota
 //^ -> diesis, ^^-> doppio diesis -> _ -> bemolle -> __ doppio bemolle -> = bequadro -> prima della nota
-//Dalla nota, estrae il corrispondente semitono MIDI
+// Da rifare come parser GLL
+// Funzione che dalla nota estrae il corrispondente semitono MIDI
 function noteToSemitones(noteString) {
   let idx = 0;
   const modSymbols = {
@@ -303,19 +341,19 @@ function noteToSemitones(noteString) {
   return (octave + 1) * 12 + semitoneOffset;
 }
 
-//Trasforma l'input delle select in semitoni MIDI
+// Trasforma una nota e ottava in semitoni MIDI
 function inputToSemitones(note, octave) {
   return (parseInt(octave) + 1) * 12 + parseInt(note);
 }
 
-//Calcola la differenza di semitoni
+// Calcola la differenza di semitoni tra due note
 function getSemitoneDifference(note1, note2) {
   if (note1 === null || note2 === null) return null;
 
   return (note2 - note1);
 }
 
-//Trova la stringa della nota a partire dal numero dei semitoni
+//Trova la stringa della nota in notazione abc a partire dal numero dei semitoni
 function semitonesToNote(semitones) {
   let octave = (semitones / 12 | 0) - 5;
   let pitch = semitones % 12;
@@ -336,25 +374,8 @@ function semitonesToNote(semitones) {
   return modifiedNote;
 }
 
-//Trasforma una nota in notazione standard
-function abcNoteToStandard(noteString) {
-  const match = noteString.match(/^([_=^_]*)([a-gA-G])/);
-  if (!match) return null;
 
-  let [, accidental, letter] = match;
-  letter = letter.toUpperCase();
-
-  let result = letter;
-  if (accidental.includes("^")) {
-    result += "#".repeat(accidental.length); // ^, ^^ ecc.
-  } else if (accidental.includes("_")) {
-    result += "b".repeat(accidental.length); // _, __ ecc.
-  }
-  return result;
-}
-
-
-// Separa header e corpo del testo
+// Separa header e corpo del testo abc
 function splitAbcHeaderBody(abcString) {
   const lines = abcString.split("\n");
   const header = [];
@@ -381,7 +402,7 @@ function getSheetKey(header) {
 }
 
 
-//Traspone una nota
+//Traspone una nota -> ancora non va con la chiave
 function transposeNote(noteString, step, key) {
   const midi = noteToSemitones(noteString);
   if (midi === null) return noteString; 
@@ -390,32 +411,76 @@ function transposeNote(noteString, step, key) {
 }
 
 
-//Traspone una stringa
+//Traspone una stringa -> ancora non va con la chiave
 function transposeBody(string, step, key) {
 return string.replace(NOTE_REGEX, match => transposeNote(match, step, key));
 }
 
+function getLastBar(abcString) {
+  // Rimuove eventuali spazi o newline iniziali/finali
+  const trimmed = abcString.trim();
+  // Divide per barre
+  const bars = trimmed.split("|").filter(bar => bar.trim() !== "");
+  if (bars.length === 0) return "";
+  const lastBar = bars[bars.length - 1].trim();
+  return lastBar + "|"; // aggiunge la barra finale
+}
+
+
 //Concatena le stringhe per generare un nuovo spartito
 function transposeAndRender() {
-  const startingInterval = getSemitoneDifference(noteToSemitones(getFirstNote()), inputToSemitones(startingNote.value, startingOctave.value));
-  const startingABC = transposeABC(userText.value, startingInterval); // Ritorna una stringa comprensiva della nuova chiave
+  const startingInterval = getSemitoneDifference(
+    noteToSemitones(getFirstNote()),
+    inputToSemitones(startingNote.value, startingOctave.value)
+  );
+
+  const startingABC = transposeABC(userText.value, startingInterval); 
   const { header, body } = splitAbcHeaderBody(startingABC);
   const key = getSheetKey(header);
-  const highestInterval = getSemitoneDifference(getHighestNote(startingABC), inputToSemitones(highestNote.value, highestOctave.value));
+
+  const highestInterval = getSemitoneDifference(
+    getHighestNote(startingABC),
+    inputToSemitones(highestNote.value, highestOctave.value)
+  );
+
   let concatenedAbc = startingABC;
+  let currentBody = body;
+
   for (let i = 0; i < highestInterval; i++) {
-    let newPiece = transposeBody(body, i+1, key);
+    const newPiece = transposeBody(currentBody, 1, key);
     concatenedAbc += newPiece;
+    currentBody = newPiece; // aggiorna per trasposizione progressiva
   }
+
+  let lastBar = getLastBar(concatenedAbc);
+  let currentLowestNote = getLowestNote(lastBar);
+  const targetLowest = inputToSemitones(lowestNote.value, lowestOctave.value);
+
+  while (currentLowestNote > targetLowest) {
+    lastBar = transposeBody(lastBar, -1, key);
+    concatenedAbc += lastBar;
+    currentLowestNote -= 1; // scendi di 1 semitono
+  }
+
   userText.value = concatenedAbc;
   renderScore();
 }
 
+
+function togglePause() {
+  if (isPaused.value) {
+    resumeSynthAndTimer();
+  } else {
+    pauseSynthAndTimer();
+  }
+  isPaused.value = !isPaused.value;
+}
+
 //ABANDONED
+// NON CANCELLARE
 // Sta creando un nuovo brano a ogni trasposizione
 // Deve invece concatenare delle stringhe su un unico brano
 // Devo avere una funzione parser che mi aumenti i semitoni sulla base della grammatica interna di abcNotation
-// NON CANCELLARE
 /*function transposeAndRender1() {
   const startingInterval = getSemitoneDifference(noteToSemitones(getFirstNote()), inputToSemitones(startingNote.value, startingOctave.value));
   const baseAbc = transposeABC(userText.value, startingInterval);
@@ -427,6 +492,23 @@ function transposeAndRender() {
   }
   userText.value = concatenedAbc;
   renderScore();
+
+  // Trasforma una nota in notazione standard
+function abcNoteToStandard(noteString) {
+  const match = noteString.match(/^([_=^_]*)([a-gA-G])/);
+  if (!match) return null;
+
+  let [, accidental, letter] = match;
+  letter = letter.toUpperCase();
+
+  let result = letter;
+  if (accidental.includes("^")) {
+    result += "#".repeat(accidental.length); // ^, ^^ ecc.
+  } else if (accidental.includes("_")) {
+    result += "b".repeat(accidental.length); // _, __ ecc.
+  }
+  return result;
+}
 }*/
 
 </script>
@@ -440,6 +522,7 @@ function transposeAndRender() {
         <button type="button" @click="renderScore">Enter</button>
         <button type="button" @click="transposeAndRender">Generate</button>
         <button type="button" @click="play">Play</button>
+        <button @click="togglePause">{{ isPaused ? 'Resume' : 'Pause' }}</button>
         <button type="button" @click="resetToDefault">Reset</button>
         <button type="button" @click="downloadWav">Save WAV</button>
         <button type="button" @click="downloadSvg">Save SVG</button>
@@ -489,8 +572,6 @@ function transposeAndRender() {
       <option value="6">6</option>
       <option value="7">7</option>
     </select>
-  <!--<label>Highest note: <input v-model="highNote" type="text" maxlength="2" /></label>
-  <label>Lowest note: <input v-model="lowNote" type="text" maxlength="2" /></label>-->
 </div>
 
     <div id="highest-control">
@@ -521,7 +602,35 @@ function transposeAndRender() {
     </select>
 </div>
 
-      </div>
+ <div id="lowest-control">
+    <label for="lowest_note">Lowest note: </label>
+    <select v-model="lowestNote" name="lowest_note" id="lowest_note">
+      <option value="0" >C</option>
+      <option value="1">C#/Db</option>
+      <option value="2">D</option>
+      <option value="3">D#/Eb</option>
+      <option value="4">E</option>
+      <option value="5">F</option>
+      <option value="6">F#/Gb</option>
+      <option value="7">G</option>
+      <option value="8">G#/Ab</option>
+      <option value="9">A</option>
+      <option value="10">A#/Bb</option>
+      <option value="11">B</option>
+    </select>
+      <label for="lowest-octave"></label>
+    <select  v-model="lowestOctave" name="lowest-octave" id="lowest-octave">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3" selected>3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+    </select>
+</div>
+
+ </div>
     <div id="container">
       <div id="target"></div>
       <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
@@ -539,7 +648,7 @@ function transposeAndRender() {
   height: 100px;
 }
 
-#starting-control, #highest-control {
+#starting-control, #highest-control, #lowest-control {
   padding: 10px;
 }
 
