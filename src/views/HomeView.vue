@@ -3,9 +3,12 @@ import { onMounted, ref } from 'vue';
 import abcjs from "abcjs";
 import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
+import lodash from 'lodash';
+import { Input, Score, Note } from '@/lib/abcp';
+import { KEYS } from '@/lib/keys';
 
 //Testo scritto dall'utente
-const userText = ref("X:1\nK:C\ncdcdz2z2|\n");
+const userText = ref("X:1\nK:C\n|cdcdz2z2|\n");
 //Testo renderizzato da abc
 const renderedText = ref(null);
 //Synth controller
@@ -93,7 +96,7 @@ async function renderScore() {
 
 // Reset dello spartito
 function resetToDefault() {
-  userText.value = "X:1\nK:C\ncdcdz2z2|\n";
+  userText.value = "X:1\nK:C\n|cdcdz2z2|\n";
   renderScore();
 }
 
@@ -158,7 +161,7 @@ function play() {
 }
 
 
-
+// Funzione che avvia il timer con le callback per la scrollbar
 function startTimingCallbacks(visualObj) {
   timer = new abcjs.TimingCallbacks(visualObj, {
     qpm: bpm.value,
@@ -260,7 +263,6 @@ function downloadSvg() {
 
 
 
-
 // Funzione che ottiene la nota più alta dello spartito inserito
 function getHighestNote(baseAbc) {
   const visualObj = abcjs.renderAbc("*", baseAbc)[0];
@@ -278,6 +280,7 @@ function getHighestNote(baseAbc) {
   return Math.max(...note_values);
 }
 
+
 // Funzione che ottiene la nota più alta dello spartito inserito
 function getLowestNote(baseAbc) {
   const visualObj = abcjs.renderAbc("*", baseAbc)[0];
@@ -294,6 +297,7 @@ function getLowestNote(baseAbc) {
   
   return Math.min(...note_values);
 }
+
 
 // Funzione che ottiene la prima nota dello spartito -> vedrò se tenerlo generico o riferirmi allo spartito inserito
 function getFirstNote() {
@@ -343,7 +347,7 @@ function noteToSemitones(noteString) {
 
 // Trasforma una nota e ottava in semitoni MIDI
 function inputToSemitones(note, octave) {
-  return (parseInt(octave) + 1) * 12 + parseInt(note);
+  return (parseInt(octave)) * 12 + parseInt(note);
 }
 
 // Calcola la differenza di semitoni tra due note
@@ -410,12 +414,13 @@ function transposeNote(noteString, step, key) {
   return semitonesToNote(newMidi);
 }
 
-
 //Traspone una stringa -> ancora non va con la chiave
 function transposeBody(string, step, key) {
 return string.replace(NOTE_REGEX, match => transposeNote(match, step, key));
 }
 
+
+// Ottiene l'ultima battuta di una stringa abc
 function getLastBar(abcString) {
   // Rimuove eventuali spazi o newline iniziali/finali
   const trimmed = abcString.trim();
@@ -426,7 +431,73 @@ function getLastBar(abcString) {
   return lastBar + "|"; // aggiunge la barra finale
 }
 
+function transposeAndRender() {
+  // Splitta l'abc in header e body, trova la chiave
+  const { header, body } = splitAbcHeaderBody(userText.value);
+  const key = getSheetKey(header);
+  const STEP = 1;
 
+  // Crea l'input e lo score
+  let input = new Input(body);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+
+  // Trova la prima nota
+  let first_note = null;
+  let highest_note = 0;
+  let lowest_note = 1000;
+  for(let bar of score.bars) {
+    for(let element of bar.elements) {
+      if(element instanceof Note) {
+        if(first_note === null) {
+          first_note = element.data.tone;
+        }
+        highest_note = Math.max(highest_note, element.data.tone);
+        lowest_note = Math.min(lowest_note, element.data.tone);
+      }
+    }
+  }
+
+  // Calcola l'intervallo di semitoni di partenza
+  const startingInterval = getSemitoneDifference(
+    first_note,
+    inputToSemitones(startingNote.value, startingOctave.value)
+  );
+
+  // Traspone lo score alla nota di partenza
+  score.transpose(startingInterval);
+
+  // Calcola l'intervallo di semitoni per la nota più alta
+  const highestInterval = getSemitoneDifference(
+    highest_note + startingInterval,
+    inputToSemitones(highestNote.value, highestOctave.value)
+  );
+
+  // Traspone lo score fino alla nota più alta
+  let acc = lodash.cloneDeep(score);
+  for(let i = 1; i <= highestInterval; i+=STEP) {
+    let tmp_score = lodash.cloneDeep(score);
+    tmp_score.transpose(i);
+    acc.extend(tmp_score);
+  }
+
+  // Calcola l'intervallo di semitoni per la nota più bassa
+  const lowestInterval = getSemitoneDifference(
+    lowest_note + startingInterval,
+    inputToSemitones(lowestNote.value, lowestOctave.value)
+  );
+
+  // Traspone lo score fino alla nota più bassa
+  for(let i = highestInterval - 1; i >= lowestInterval; i-=STEP) {
+    let tmp_score = lodash.cloneDeep(score);
+    tmp_score.transpose(i);
+    acc.extend(tmp_score);
+  }
+
+  userText.value = header + "\n" + acc.generate();
+  renderScore();
+}
+
+/*
 //Concatena le stringhe per generare un nuovo spartito
 function transposeAndRender() {
   const startingInterval = getSemitoneDifference(
@@ -465,8 +536,9 @@ function transposeAndRender() {
   userText.value = concatenedAbc;
   renderScore();
 }
+*/
 
-
+// Funzione che mette in pausa o riprende il synth e il timer
 function togglePause() {
   if (isPaused.value) {
     resumeSynthAndTimer();
@@ -475,41 +547,6 @@ function togglePause() {
   }
   isPaused.value = !isPaused.value;
 }
-
-//ABANDONED
-// NON CANCELLARE
-// Sta creando un nuovo brano a ogni trasposizione
-// Deve invece concatenare delle stringhe su un unico brano
-// Devo avere una funzione parser che mi aumenti i semitoni sulla base della grammatica interna di abcNotation
-/*function transposeAndRender1() {
-  const startingInterval = getSemitoneDifference(noteToSemitones(getFirstNote()), inputToSemitones(startingNote.value, startingOctave.value));
-  const baseAbc = transposeABC(userText.value, startingInterval);
-  var concatenedAbc = baseAbc;
-  const highestInterval = getSemitoneDifference(getHighestNote(baseAbc), inputToSemitones(highestNote.value, highestOctave.value));
-  for (let i = 0; i < highestInterval; i++) {
-    var newPiece = transposeABC(baseAbc, i+1);
-    concatenedAbc += newPiece;
-  }
-  userText.value = concatenedAbc;
-  renderScore();
-
-  // Trasforma una nota in notazione standard
-function abcNoteToStandard(noteString) {
-  const match = noteString.match(/^([_=^_]*)([a-gA-G])/);
-  if (!match) return null;
-
-  let [, accidental, letter] = match;
-  letter = letter.toUpperCase();
-
-  let result = letter;
-  if (accidental.includes("^")) {
-    result += "#".repeat(accidental.length); // ^, ^^ ecc.
-  } else if (accidental.includes("_")) {
-    result += "b".repeat(accidental.length); // _, __ ecc.
-  }
-  return result;
-}
-}*/
 
 </script>
 
