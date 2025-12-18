@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import abcjs from "abcjs";
-import { transposeABC } from 'abc-notation-transposition';
 import { nextTick } from 'vue';
 import lodash from 'lodash';
 import { Input, Score, Note } from '@/lib/abcp';
@@ -261,90 +260,6 @@ function downloadSvg() {
   URL.revokeObjectURL(url);
 }
 
-
-
-// Funzione che ottiene la nota più alta dello spartito inserito
-function getHighestNote(baseAbc) {
-  const visualObj = abcjs.renderAbc("*", baseAbc)[0];
-  const note_pitches = visualObj.lines[0].staff[0].voices[0];
-  const note_names = new Array();
-  const note_values = new Array();
-
-  for (let pitch of note_pitches) {
-    if (pitch.pitches){
-      note_names.push(pitch.pitches[0].name)
-      note_values.push(noteToSemitones(pitch.pitches[0].name))
-    }
-  }
-  
-  return Math.max(...note_values);
-}
-
-
-// Funzione che ottiene la nota più alta dello spartito inserito
-function getLowestNote(baseAbc) {
-  const visualObj = abcjs.renderAbc("*", baseAbc)[0];
-  const note_pitches = visualObj.lines[0].staff[0].voices[0];
-  const note_names = new Array();
-  const note_values = new Array();
-
-  for (let pitch of note_pitches) {
-    if (pitch.pitches){
-      note_names.push(pitch.pitches[0].name)
-      note_values.push(noteToSemitones(pitch.pitches[0].name))
-    }
-  }
-  
-  return Math.min(...note_values);
-}
-
-
-// Funzione che ottiene la prima nota dello spartito -> vedrò se tenerlo generico o riferirmi allo spartito inserito
-function getFirstNote() {
-  const visualObj = (renderedText.value)[0];
-  const note_object = visualObj.lines[0].staff[0].voices[0][0]
-  let note_name = note_object.pitches[0].name;
-  return note_name;
-}
-
-//In abcjs le minuscole sono sulla quinta ottava, le maiuscole sulla quarta
-// c è su 5, C è su 4 -> "," abbassano di 1 ottava -> "'" alzano di un'ottava -> sono inseriti dopo la nota
-//^ -> diesis, ^^-> doppio diesis -> _ -> bemolle -> __ doppio bemolle -> = bequadro -> prima della nota
-// Da rifare come parser GLL
-// Funzione che dalla nota estrae il corrispondente semitono MIDI
-function noteToSemitones(noteString) {
-  let idx = 0;
-  const modSymbols = {
-    "^": 1,
-    "_": -1,
-    "=": 0
-  };
-  let semitoneOffset = 0;
-  while (idx < noteString.length && modSymbols[noteString[idx]] !== undefined) {
-    semitoneOffset += modSymbols[noteString[idx]];
-    idx++;
-  }
-  if (idx >= noteString.length) return null;
-  let note = noteString[idx++];
-  let octave = null;
-  if (note.toUpperCase() == note) {
-    octave = 4;
-  } else {
-    octave = 5;
-  }
-  note = note.toUpperCase();
-  semitoneOffset += NOTE_TO_SEMITONE[note];
-  const octaveSymbols = {
-    ",": -1,
-    "'": 1
-  };
-  while (idx < noteString.length && octaveSymbols[noteString[idx]] !== undefined) {
-    octave += octaveSymbols[noteString[idx]];
-    idx++;
-  }
-  return (octave + 1) * 12 + semitoneOffset;
-}
-
 // Trasforma una nota e ottava in semitoni MIDI
 function inputToSemitones(note, octave) {
   return (parseInt(octave)) * 12 + parseInt(note);
@@ -355,27 +270,6 @@ function getSemitoneDifference(note1, note2) {
   if (note1 === null || note2 === null) return null;
 
   return (note2 - note1);
-}
-
-//Trova la stringa della nota in notazione abc a partire dal numero dei semitoni
-function semitonesToNote(semitones) {
-  let octave = (semitones / 12 | 0) - 5;
-  let pitch = semitones % 12;
-  let note = SEMITONE_TO_NOTE[pitch];
-  let modifiedNote = note;
-  if (octave < 0) {
-    for (let i = 0; i < Math.abs(octave); i++){
-      modifiedNote+=",";
-    }
-  } else if (octave == 1){
-    modifiedNote = note.toLowerCase();
-  } else if (octave > 1) {
-    modifiedNote = note.toLowerCase();
-    for (let i = 1; i < Math.abs(octave); i++){
-      modifiedNote+="'";
-    }
-  }
-  return modifiedNote;
 }
 
 
@@ -403,32 +297,6 @@ function splitAbcHeaderBody(abcString) {
 function getSheetKey(header) {
   const match = header.match(/^K:([^\s]+)/m);
   return match ? match[1] : null;
-}
-
-
-//Traspone una nota -> ancora non va con la chiave
-function transposeNote(noteString, step, key) {
-  const midi = noteToSemitones(noteString);
-  if (midi === null) return noteString; 
-  let newMidi = midi + step;
-  return semitonesToNote(newMidi);
-}
-
-//Traspone una stringa -> ancora non va con la chiave
-function transposeBody(string, step, key) {
-return string.replace(NOTE_REGEX, match => transposeNote(match, step, key));
-}
-
-
-// Ottiene l'ultima battuta di una stringa abc
-function getLastBar(abcString) {
-  // Rimuove eventuali spazi o newline iniziali/finali
-  const trimmed = abcString.trim();
-  // Divide per barre
-  const bars = trimmed.split("|").filter(bar => bar.trim() !== "");
-  if (bars.length === 0) return "";
-  const lastBar = bars[bars.length - 1].trim();
-  return lastBar + "|"; // aggiunge la barra finale
 }
 
 function transposeAndRender() {
@@ -497,46 +365,6 @@ function transposeAndRender() {
   renderScore();
 }
 
-/*
-//Concatena le stringhe per generare un nuovo spartito
-function transposeAndRender() {
-  const startingInterval = getSemitoneDifference(
-    noteToSemitones(getFirstNote()),
-    inputToSemitones(startingNote.value, startingOctave.value)
-  );
-
-  const startingABC = transposeABC(userText.value, startingInterval); 
-  const { header, body } = splitAbcHeaderBody(startingABC);
-  const key = getSheetKey(header);
-
-  const highestInterval = getSemitoneDifference(
-    getHighestNote(startingABC),
-    inputToSemitones(highestNote.value, highestOctave.value)
-  );
-
-  let concatenedAbc = startingABC;
-  let currentBody = body;
-
-  for (let i = 0; i < highestInterval; i++) {
-    const newPiece = transposeBody(currentBody, 1, key);
-    concatenedAbc += newPiece;
-    currentBody = newPiece; // aggiorna per trasposizione progressiva
-  }
-
-  let lastBar = getLastBar(concatenedAbc);
-  let currentLowestNote = getLowestNote(lastBar);
-  const targetLowest = inputToSemitones(lowestNote.value, lowestOctave.value);
-
-  while (currentLowestNote > targetLowest) {
-    lastBar = transposeBody(lastBar, -1, key);
-    concatenedAbc += lastBar;
-    currentLowestNote -= 1; // scendi di 1 semitono
-  }
-
-  userText.value = concatenedAbc;
-  renderScore();
-}
-*/
 
 // Funzione che mette in pausa o riprende il synth e il timer
 function togglePause() {
