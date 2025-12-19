@@ -342,6 +342,102 @@ class Note {
     }
 }
 
+class Chord {
+    constructor(elements, duration) {
+        this.elements = elements;
+        this.duration = duration;
+    }
+
+    static hasFirst(char) {
+        return char === "[";
+    }
+
+    static parse(input, alterations) {
+        assert(Chord.hasFirst(input.next()));
+        let elements = new Array();
+        while (input.peek() !== "]") {
+            let el = null;
+            if (Whitespace.hasFirst(input.peek())) {
+                el = Whitespace.parse(input);
+            } else if (Note.hasFirst(input.peek())) {
+                el = Note.parse(input, alterations);
+            }
+            elements.push(el);
+        }
+        assert(input.next() === "]");
+        let duration = Duration.parse(input);
+        return new Chord(elements, duration);
+    }
+
+    generate() {
+        let output = "[";
+        for (let el of this.elements) {
+            output += el.generate();
+        }
+        output += "]" + this.duration.generate();
+        return output;
+    }
+
+    transpose(semitones, alterations) {
+        for (let el of this.elements) {
+            if (el instanceof Note) {
+                el.transpose(semitones, alterations);
+            }
+        }
+    }
+}
+
+class Tuplet {
+    static hasFirst(char) {
+        return char === "(";
+    }
+
+    constructor(elements, n) {
+        this.elements = elements;
+        this.n = n;
+    }
+
+    static parse(input, alterations) {
+        assert(Tuplet.hasFirst(input.next()));
+        let n = Duration.readNumber(input);
+        let elements = new Array();
+        let note_counter = 0;
+        while (note_counter < n) {
+            let el = null;
+            if (Whitespace.hasFirst(input.peek())) {
+                el = Whitespace.parse(input);
+            } else if (Chord.hasFirst(input.peek())) {
+                el = Chord.parse(input, alterations);
+                note_counter++;
+            } else if (Rest.hasFirst(input.peek())) {
+                el = Rest.parse(input);
+                note_counter++;
+            } else if (Note.hasFirst(input.peek())) {
+                el = Note.parse(input, alterations);
+                note_counter++;
+            }
+            elements.push(el);
+        }
+        return new Tuplet(elements, n);
+    }
+
+    generate() {
+        let output = "(" + this.n;
+        for (let el of this.elements) {
+            output += el.generate();
+        }
+        return output;
+    }
+
+    transpose(semitones, alterations) {
+        for (let el of this.elements) {
+            if (el instanceof Note || el instanceof Chord) {
+                el.transpose(semitones, alterations);
+            }
+        }
+    }
+}
+
 class Bar {
     constructor(elements) {
         this.elements = elements;
@@ -359,6 +455,10 @@ class Bar {
             let el = null;
             if (Whitespace.hasFirst(input.peek())) {
                 el = Whitespace.parse(input);
+            } else if (Tuplet.hasFirst(input.peek())) {
+                el = Tuplet.parse(input, alterations);
+            } else if (Chord.hasFirst(input.peek())) {
+                el = Chord.parse(input, alterations);
             } else if (Rest.hasFirst(input.peek())) {
                 el = Rest.parse(input);
             } else if (Note.hasFirst(input.peek())) {
@@ -380,7 +480,7 @@ class Bar {
     transpose(semitones, globalAlterations) {
         let alterations = structuredClone(globalAlterations);
         for (let el of this.elements) {
-            if (el instanceof Note) {
+            if (el instanceof Note || el instanceof Chord || el instanceof Tuplet) {
                 el.transpose(semitones, alterations);
             }
         }
@@ -457,4 +557,4 @@ class Score {
     }
 }
 
-export { Input, Whitespace, Rest, Pitch, Note, Score, Bar, Octave, Accidental };
+export { Input, Whitespace, Rest, Pitch, Note, Score, Bar, Octave, Accidental, Tuplet, Chord };

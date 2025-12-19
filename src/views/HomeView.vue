@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import abcjs from "abcjs";
 import { nextTick } from 'vue';
 import lodash from 'lodash';
-import { Input, Score, Note } from '@/lib/abcp';
+import { Input, Score, Note, Tuplet, Chord } from '@/lib/abcp';
 import { KEYS } from '@/lib/keys';
 
 //Testo scritto dall'utente
@@ -40,6 +40,7 @@ onMounted(() => {
 
 // Renderizza lo spartito all'avvio o quando richiesto
 async function renderScore() {
+  isPaused.value = false;
   stopSynthAndTimer();
 
   var options = {
@@ -68,6 +69,7 @@ async function renderScore() {
 // Reset dello spartito
 function resetToDefault() {
   userText.value = "X:1\nK:C\n|cdcdz2z2|\n";
+  isPaused.value = false;
   renderScore();
 }
 
@@ -272,6 +274,7 @@ function getSheetKey(header) {
 }
 
 function transposeAndRender() {
+  isPaused.value = false;
   // Splitta l'abc in header e body, trova la chiave
   const { header, body } = splitAbcHeaderBody(userText.value);
   const key = getSheetKey(header);
@@ -292,6 +295,16 @@ function transposeAndRender() {
         }
         highest_note = Math.max(highest_note, element.data.tone);
         lowest_note = Math.min(lowest_note, element.data.tone);
+      } else if(element instanceof Tuplet || element instanceof Chord) {
+        for(let se of element.elements) {
+          if(se instanceof Note) {
+            if(first_note === null) {
+              first_note = se.data.tone;
+            }
+            highest_note = Math.max(highest_note, se.data.tone);
+            lowest_note = Math.min(lowest_note, se.data.tone);
+          }
+        }
       }
     }
   }
