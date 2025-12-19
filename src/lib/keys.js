@@ -1,5 +1,6 @@
 let KEYS = {};
 
+// Major keys with sharps
 KEYS["C"] = {
     "a": 0,
     "b": 0,
@@ -11,16 +12,17 @@ KEYS["C"] = {
 };
 KEYS["CMAJ"] = KEYS["C"];
 
-KEYS["CMIN"] = {
-    "a": -1,
-    "b": -1,
+
+KEYS["G"] = {
+    "a": 0,
+    "b": 0,
     "c": 0,
     "d": 0,
-    "e": -1,
-    "f": 0,
+    "e": 0,
+    "f": 1,
     "g": 0
 };
-KEYS["CM"] = KEYS["CMIN"];
+KEYS["GMAJ"] = KEYS["G"];
 
 KEYS["D"] = {
     "a": 0,
@@ -33,6 +35,233 @@ KEYS["D"] = {
 };
 KEYS["DMAJ"] = KEYS["D"];
 
+
+KEYS["A"] = {
+    "a": 0,
+    "b": 0,
+    "c": 1,
+    "d": 0,
+    "e": 0,
+    "f": 1,
+    "g": 1
+};
+KEYS["AMAJ"] = KEYS["A"];
+
+KEYS["E"] = {
+    "a": 0,
+    "b": 0,
+    "c": 1,
+    "d": 1,
+    "e": 0,
+    "f": 1,
+    "g": 1
+};
+KEYS["EMAJ"] = KEYS["E"];
+
+KEYS["B"] = {
+    "a": 1,
+    "b": 0,
+    "c": 1,
+    "d": 1,
+    "e": 0,
+    "f": 1,
+    "g": 1
+};
+KEYS["BMAJ"] = KEYS["B"];
+
+KEYS["F#"] = {
+    "a": 1,
+    "b": 0,
+    "c": 1,
+    "d": 1,
+    "e": 1,
+    "f": 1,
+    "g": 1
+};
+KEYS["F#MAJ"] = KEYS["F#"];
+
+KEYS["C#"] = {
+    "a": 1,
+    "b": 1,
+    "c": 1,
+    "d": 1,
+    "e": 1,
+    "f": 1,
+    "g": 1
+};
+KEYS["C#MAJ"] = KEYS["C#"];
+
+// Major keys with flats
+
+KEYS["F"] = {
+    "a": 0,
+    "b": -1,
+    "c": 0,
+    "d": 0,
+    "e": 0,
+    "f": 0,
+    "g": 0
+};
+KEYS["FMAJ"] = KEYS["F"];
+
+KEYS["BB"] = {
+    "a": 0,
+    "b": -1,
+    "c": 0,
+    "d": 0,
+    "e": -1,
+    "f": 0,
+    "g": 0
+};
+KEYS["BBMAJ"] = KEYS["BB"];
+
+KEYS["EB"] = {
+    "a": -1,
+    "b": -1,
+    "c": 0,
+    "d": 0,
+    "e": -1,
+    "f": 0,
+    "g": 0
+};
+KEYS["EBMAJ"] = KEYS["EB"];
+
+KEYS["AB"] = {
+    "a": -1,
+    "b": -1,
+    "c": 0,
+    "d": -1,
+    "e": -1,
+    "f": 0,
+    "g": 0
+};
+KEYS["ABMAJ"] = KEYS["AB"];
+
+KEYS["DB"] = {
+    "a": -1,
+    "b": -1,
+    "c": 0,
+    "d": -1,
+    "e": -1,
+    "f": 0,
+    "g": -1
+};
+KEYS["DBMAJ"] = KEYS["DB"];
+
+KEYS["GB"] = {
+    "a": -1,
+    "b": -1,
+    "c": -1,
+    "d": -1,
+    "e": -1,
+    "f": 0,
+    "g": -1
+};
+KEYS["GBMAJ"] = KEYS["GB"];
+
+KEYS["CB"] = {
+    "a": -1,
+    "b": -1,
+    "c": -1,
+    "d": -1,
+    "e": -1,
+    "f": -1,
+    "g": -1
+};
+KEYS["CBMAJ"] = KEYS["CB"];
+
+// Minor keys with sharps
+
+KEYS["AMIN"] = {
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "d": 0,
+    "e": 0,
+    "f": 0,
+    "g": 0
+};
+KEYS["AM"] = KEYS["AMIN"];
+
+KEYS["EMIN"] = {
+    "a": 0,
+    "b": 0,
+    "c": 0,
+    "d": 0,
+    "e": 0,
+    "f": 1,
+    "g": 0
+};
+KEYS["EM"] = KEYS["EMIN"];
+
+KEYS["BMIN"] = {
+    "a": 0,
+    "b": 0,
+    "c": 1,
+    "d": 0,
+    "e": 0,
+    "f": 1,
+    "g": 0
+};
+KEYS["BM"] = KEYS["BMIN"];
+
+KEYS["F#MIN"] = {
+    "a": 0,
+    "b": 0,
+    "c": 1,
+    "d": 0,
+    "e": 0,
+    "f": 1,
+    "g": 1
+};
+KEYS["F#M"] = KEYS["F#MIN"];
+
+KEYS["C#MIN"] = {
+    "a": 0,
+    "b": 0,
+    "c": 1,
+    "d": 1,
+    "e": 0,
+    "f": 1,
+    "g": 1
+};
+KEYS["C#M"] = KEYS["C#MIN"];
+
+KEYS["G#MIN"] = {
+    "a": 1,
+    "b": 0,
+    "c": 1,
+    "d": 1,
+    "e": 0,
+    "f": 1,
+    "g": 1
+};
+KEYS["G#M"] = KEYS["G#MIN"];
+
+KEYS["D#MIN"] = {
+    "a": 1,
+    "b": 0,
+    "c": 1,
+    "d": 1,
+    "e": 1,
+    "f": 1,
+    "g": 1
+};
+KEYS["D#M"] = KEYS["D#MIN"];
+
+KEYS["A#MIN"] = {
+    "a": 1,
+    "b": 1,
+    "c": 1,
+    "d": 1,
+    "e": 1,
+    "f": 1,
+    "g": 1
+};
+KEYS["A#M"] = KEYS["A#MIN"];
+
+// Minor keys with flats
+
 KEYS["DMIN"] = {
     "a": 0,
     "b": -1,
@@ -43,5 +272,71 @@ KEYS["DMIN"] = {
     "g": 0
 };
 KEYS["DM"] = KEYS["DMIN"];
+
+KEYS["GMIN"] = {
+    "a": 0,
+    "b": -1,
+    "c": 0,
+    "d": 0,
+    "e": -1,
+    "f": 0,
+    "g": 0
+};
+KEYS["GM"] = KEYS["GMIN"];
+
+KEYS["CMIN"] = {
+    "a": -1,
+    "b": -1,
+    "c": 0,
+    "d": 0,
+    "e": -1,
+    "f": 0,
+    "g": 0
+};
+KEYS["CM"] = KEYS["CMIN"];
+
+KEYS["FMIN"] = {
+    "a": -1,
+    "b": -1,
+    "c": 0,
+    "d": -1,
+    "e": -1,
+    "f": 0,
+    "g": 0
+};
+KEYS["FM"] = KEYS["FMIN"];
+
+KEYS["BBMIN"] = {
+    "a": -1,
+    "b": -1,
+    "c": 0,
+    "d": -1,
+    "e": -1,
+    "f": 0,
+    "g": -1
+};
+KEYS["BBM"] = KEYS["BBMIN"];
+
+KEYS["EBMIN"] = {
+    "a": -1,
+    "b": -1,
+    "c": -1,
+    "d": -1,
+    "e": -1,
+    "f": 0,
+    "g": -1
+};
+KEYS["EBM"] = KEYS["EBMIN"];
+
+KEYS["ABMIN"] = {
+    "a": -1,
+    "b": -1,
+    "c": -1,
+    "d": -1,
+    "e": -1,
+    "f": -1,
+    "g": -1
+};
+KEYS["ABM"] = KEYS["ABMIN"];
 
 export { KEYS };

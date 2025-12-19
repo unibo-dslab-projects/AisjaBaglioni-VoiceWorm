@@ -13,43 +13,15 @@ const renderedText = ref(null);
 //Synth controller
 const synth = ref(null);
 const isPaused = ref(false); 
-const currentTime = ref(0); 
 //Dimensione e posizione della scrollbar
 const scrollbarLeft = ref(null);
 const scrollbarTop = ref(null);
 const scrollbarHeight = ref(null);
 //BPM e conversioni tra note e pitch
 const bpm = ref(120);
-const NOTE_REGEX = /[\^_=]*[A-Ga-g][,']*/g;
-const NOTE_TO_SEMITONE = {
-  "C": 0,
-  "^C": 1,
-  "D": 2,
-  "^D": 3,
-  "E": 4,
-  "F": 5,
-  "^F": 6,
-  "G": 7,
-  "^G": 8,
-  "A": 9,
-  "^A": 10,
-  "B": 11
-};
-
-const SEMITONE_TO_NOTE = {
-  0: "C",
-  1: "^C",
-  2: "D",
-  3: "^D",
-  4: "E",
-  5: "F",
-  6: "^F",
-  7: "G",
-  8: "^G",
-  9: "A",
-  10: "^A",
-  11: "B"
-}
+//Step per la generazione delle trasposizioni
+const ascendingSteps = ref(1);
+const descendingSteps = ref(1);
 
 //Parametri inseriti dall'utente nelle select - C4 e C5 default
 const startingNote = ref(0);
@@ -303,7 +275,6 @@ function transposeAndRender() {
   // Splitta l'abc in header e body, trova la chiave
   const { header, body } = splitAbcHeaderBody(userText.value);
   const key = getSheetKey(header);
-  const STEP = 1;
 
   // Crea l'input e lo score
   let input = new Input(body);
@@ -342,10 +313,14 @@ function transposeAndRender() {
 
   // Traspone lo score fino alla nota più alta
   let acc = lodash.cloneDeep(score);
-  for(let i = 1; i <= highestInterval; i+=STEP) {
+  let current = ascendingSteps.value;
+
+  for(let i = 1; i <= highestInterval; i+=ascendingSteps.value) {
     let tmp_score = lodash.cloneDeep(score);
-    tmp_score.transpose(i);
+    tmp_score.transpose(current);
     acc.extend(tmp_score);
+
+    current += ascendingSteps.value;
   }
 
   // Calcola l'intervallo di semitoni per la nota più bassa
@@ -355,10 +330,12 @@ function transposeAndRender() {
   );
 
   // Traspone lo score fino alla nota più bassa
-  for(let i = highestInterval - 1; i >= lowestInterval; i-=STEP) {
+  current = -descendingSteps.value;
+  for(let i = highestInterval - 1; i >= lowestInterval; i-=descendingSteps.value) {
     let tmp_score = lodash.cloneDeep(score);
     tmp_score.transpose(i);
     acc.extend(tmp_score);
+    current -= descendingSteps.value;
   }
 
   userText.value = header + "\n" + acc.generate();
@@ -410,6 +387,23 @@ function togglePause() {
       max="300"
       step="1"
     />
+
+    <div id="step-control">
+        <div id="ascending-step">
+        <label>Ascending steps:</label>
+        <select v-model.number="ascendingSteps">
+          <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
+        </select>
+        </div>
+        <div id="descending-step">
+        <label>Descending steps:</label>
+        <select v-model.number="descendingSteps">
+          <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
+        </select>
+      </div>
+    </div>
+
+
 
     <div id="starting-control">
     <label for="starting_note">Starting note: </label>
