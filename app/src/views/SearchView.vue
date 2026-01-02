@@ -10,9 +10,20 @@ function logout() {
     credentials.logout();
     router.push('/login');
 }
+
+function create() {
+    router.push('/create');
+}
+
+function addStuff() {
+    router.push('/add-stuff');
+}
+
 </script>
 
 <template>
     <main>Search Page</main>
+    <button @click="create">Create</button>
+    <button @click="addStuff">Add Stuff</button>
     <button @click="logout">Logout</button>
 </template>

@@ -81,6 +81,39 @@ app.post("/login", async (c) => {
 // Favorite routes
 
 // Tags routes
+app.get("/tags", async (c) => {
+  const db = c.env.DB;
+  const result = await db.prepare("SELECT id, category, label FROM tag").run();
+  if (!result.success) {
+    return c.text("Cannot retrieve tags", 500);
+  }
+  return c.json(result.results);
+});
+
+app.get("/tags/:category", async (c) => {
+  const category = c.req.param("category");
+  const db = c.env.DB;
+  const result = await db.prepare("SELECT id, category, label FROM tag WHERE category = ?").bind(category).run();
+  if (!result.success) {
+    return c.text("Cannot retrieve tags", 500);
+  }
+  return c.json(result.results);
+});
+
+app.post("/tags", async (c) => {
+  const args = await c.req.json();
+  const category = args["category"];
+  const label = args["label"];
+  if (!category || !label) {
+    return c.text("Invalid category or label", 400);
+  }
+  const db = c.env.DB;
+  const result = await db.prepare("INSERT INTO tag(category, label) VALUES(?, ?) RETURNING id").bind(category, label).run();
+  if (!result.success) {
+    return c.text("Cannot create tag", 400);
+  }
+  return c.json({ id: result.results[0].id });
+});
 
 // Exercise Tags routes
 

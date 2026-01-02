@@ -7,6 +7,7 @@ import ExercisesView from '@/views/ExerciseView.vue'
 import CreateView from '@/views/CreateView.vue'
 import TutorialView from '@/views/TutorialView.vue'
 import SearchView from '@/views/SearchView.vue'
+import AddStuffView from '@/views/AddStuffView.vue'
 
 const router = createRouter({
   history: import.meta.env.PROD ? createWebHistory() : createWebHashHistory(),
@@ -30,6 +31,22 @@ const router = createRouter({
       component: RegisterView,
       meta: {
         noAuth: true,
+      }
+    },
+    {
+      path: '/create',
+      name: 'create',
+      component: CreateView,
+      meta: {
+        noAuth: false,
+      }
+    },
+    {
+      path: '/add-stuff',
+      name: 'add-stuff',
+      component: AddStuffView,
+      meta: {
+        noAuth: false,
       }
     }
   ],

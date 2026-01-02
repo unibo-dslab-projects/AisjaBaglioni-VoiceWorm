@@ -11,7 +11,7 @@ const username = ref('');
 const message = ref('');
 
 async function handleRegister() {
-  let status = false;
+let status = false;
 
 try {
   const response = await axios.post(import.meta.env.VITE_API_BASE_URL + '/register', {

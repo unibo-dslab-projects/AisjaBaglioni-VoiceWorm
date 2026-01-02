@@ -24,7 +24,8 @@ CREATE TABLE exercise (
 CREATE TABLE tag (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT NOT NULL,    
-    category TEXT NOT NULL              
+    category TEXT NOT NULL,
+    UNIQUE(label, category)             
 );
 
 CREATE TABLE exercise_tag (
