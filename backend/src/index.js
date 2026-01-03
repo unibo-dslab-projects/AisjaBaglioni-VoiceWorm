@@ -66,7 +66,7 @@ app.post("/login", async (c) => {
   if (!isPasswordCorrect) {
     return c.text("Invalid password", 401);
   }
-  const token = await new jose.SignJWT({ id: user.id, username: user.username, email: user.email})
+  const token = await new jose.SignJWT({ id: user.id, username: user.username, email: user.email })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("60d")
@@ -77,6 +77,24 @@ app.post("/login", async (c) => {
 // User routes
 
 // Exercise routes
+app.post("/exercises", auth, async (c) => {
+  const user = c.get("user");
+  const args = await c.req.json();
+  const abc = args["abc"];
+  const is_public = args["is_public"];
+  const bpm = args["bpm"];
+  const a_steps = args["a_steps"];
+  const d_steps = args["d_steps"];
+  const s_note = args["s_note"];
+  const h_note = args["h_note"];
+  const l_note = args["l_note"];
+  const db = c.env.DB;
+  const result = await db.prepare("INSERT INTO exercise(abc, userID, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id").bind(abc, user.id, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note).run();
+  if (!result.success) {
+    return c.text("Cannot create exercise", 500);
+  }
+  return c.json({ id: result.results[0].id });
+});
 
 // Favorite routes
 
@@ -84,16 +102,6 @@ app.post("/login", async (c) => {
 app.get("/tags", async (c) => {
   const db = c.env.DB;
   const result = await db.prepare("SELECT id, category, label FROM tag").run();
-  if (!result.success) {
-    return c.text("Cannot retrieve tags", 500);
-  }
-  return c.json(result.results);
-});
-
-app.get("/tags/:category", async (c) => {
-  const category = c.req.param("category");
-  const db = c.env.DB;
-  const result = await db.prepare("SELECT id, category, label FROM tag WHERE category = ?").bind(category).run();
   if (!result.success) {
     return c.text("Cannot retrieve tags", 500);
   }

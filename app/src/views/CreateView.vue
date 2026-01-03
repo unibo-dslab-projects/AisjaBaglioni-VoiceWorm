@@ -1,10 +1,16 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue';
+import { useCredentials } from '@/stores/credentials';
+import { useRouter } from 'vue-router';
 import abcjs from "abcjs";
 import { nextTick } from 'vue';
 import lodash from 'lodash';
 import { Input, Score, Note, Tuplet, Chord } from '@/lib/abcp';
 import { KEYS } from '@/lib/keys';
+import axios from 'axios';
+
+const credentials = useCredentials();
+const router = useRouter();
 
 //Testo scritto dall'utente
 const userText = ref("X:1\nK:C\n|cdcdz2z2|\n");
@@ -32,13 +38,74 @@ const highestOctave = ref(5);
 const lowestNote = ref(0);
 const lowestOctave = ref(3);
 
+//Valori in semitoni MIDI delle note selezionate
+const startingSemitones = computed(() =>
+  inputToSemitones(startingNote.value, startingOctave.value)
+);
+
+const highestSemitones = computed(() =>
+  inputToSemitones(highestNote.value, highestOctave.value)
+);
+
+const lowestSemitones = computed(() =>
+  inputToSemitones(lowestNote.value, lowestOctave.value)
+);
+
+
+
 //Tags e visibilità
-const visibility = ref("public")
+const visibility = ref("1")
+const allTags = ref([]);
+const selectedTags = ref({});
 
 
 //Timer del synth, da resettare a ogni nuovo play
 let timer = null; 
 
+const message = ref('');
+
+function onSubmit() {
+    /*console.log("On Submit");
+    console.log("User text:\n", userText.value);
+    console.log("Visibility:", visibility.value);
+    console.log("BPM:", bpm.value);
+    console.log("Ascending steps:", ascendingSteps.value);
+    console.log("Descending steps:", descendingSteps.value);
+    console.log("Starting semitones:", startingSemitones.value);
+    console.log("Highest semitones:", highestSemitones.value);
+    console.log("Lowest semitones:", lowestSemitones.value);*/
+    submitExercise();
+}
+
+// Funzione per inviare l'esercizio al backend
+async function submitExercise() {
+  try {
+const response = await axios.post(
+      import.meta.env.VITE_API_BASE_URL + '/exercises',
+      {
+        abc: userText.value,
+        is_public: Number(visibility.value),
+        bpm: bpm.value,
+        a_steps: ascendingSteps.value,
+        d_steps: descendingSteps.value,
+        s_note: startingSemitones.value,
+        h_note: highestSemitones.value,
+        l_note: lowestSemitones.value
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${credentials.token}`
+        }
+      }
+    );
+    message.value = response.data.message;
+    router.push('/');
+  } catch (error) {
+    message.value = error.response.data ?? 'Submit exercise failed';
+    console.error('Submit exercise error:', error);
+  }
+}
+// Funzione per ottenere i tag dal backend
 async function fetchTags() {
   try {
     const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/tags');
@@ -53,9 +120,23 @@ async function fetchTags() {
   }
 }
 
+// Funzione per loggare i tag
+ async function logTags() {
+    allTags.value = await fetchTags();
+ }
 
 onMounted(() => {
     renderScore();
+    logTags();
+    /*console.log("On Mounted");
+    console.log("User text:\n", userText.value);
+    console.log("Visibility:", visibility.value);
+    console.log("BPM:", bpm.value);
+    console.log("Ascending steps:", ascendingSteps.value);
+    console.log("Descending steps:", descendingSteps.value);
+    console.log("Starting semitones:", startingSemitones.value);
+    console.log("Highest semitones:", highestSemitones.value);
+    console.log("Lowest semitones:", lowestSemitones.value);*/
 });
 
 
@@ -349,18 +430,20 @@ function transposeAndRender() {
   }
 
   // Calcola l'intervallo di semitoni di partenza
+  startingSemitones.value = inputToSemitones(startingNote.value, startingOctave.value);
   const startingInterval = getSemitoneDifference(
     first_note,
-    inputToSemitones(startingNote.value, startingOctave.value)
+    startingSemitones.value
   );
 
   // Traspone lo score alla nota di partenza
   score.transpose(startingInterval);
 
   // Calcola l'intervallo di semitoni per la nota più alta
+  highestSemitones.value = inputToSemitones(highestNote.value, highestOctave.value);
   const highestInterval = getSemitoneDifference(
     highest_note + startingInterval,
-    inputToSemitones(highestNote.value, highestOctave.value)
+    highestSemitones.value
   );
 
   // Traspone lo score fino alla nota più alta
@@ -376,9 +459,10 @@ function transposeAndRender() {
   }
 
   // Calcola l'intervallo di semitoni per la nota più bassa
+  lowestSemitones.value = inputToSemitones(lowestNote.value, lowestOctave.value);
   const lowestInterval = getSemitoneDifference(
     lowest_note + startingInterval,
-    inputToSemitones(lowestNote.value, lowestOctave.value)
+    lowestSemitones.value
   );
 
   // Traspone lo score fino alla nota più bassa
@@ -564,7 +648,10 @@ function togglePause() {
 
     <fieldset>
         <legend>Tags</legend>
-        
+        <fieldset v-for="(tags, category) in groupedTags" :key="category" class="tag-group">
+            <legend>{{ category }}</legend>
+            <div v-for="tag in tags" :key="tag.id" class="tag-label"><input type="checkbox" v-model="selectedTags[tag.id]"/>{{ tag.label }}</div>
+        </fieldset>
     </fieldset>
 
     <fieldset>
@@ -574,7 +661,7 @@ function togglePause() {
       <input
         type="radio"
         id="public"
-        value="public"
+        :value="1"
         v-model="visibility"
       />
       <label for="public">Public</label>
@@ -582,14 +669,14 @@ function togglePause() {
       <input
         type="radio"
         id="private"
-        value="private"
+        :value="0"
         v-model="visibility"
       />
       <label for="private">Private</label>
       </div>
 
       <div>
-      <button id="submit-button" @click="submit">Submit Exercise</button>
+      <button id="submit-button" @click="onSubmit">Submit Exercise</button>
         </div>
     </fieldset>
 
@@ -601,10 +688,9 @@ function togglePause() {
 <style scoped>
 
 fieldset {
-width: 70%;
-padding: 10px;
+  width: 80%;
+  padding: 10px;
 }
-
 
 .text {
   width: 50%;
@@ -629,7 +715,6 @@ padding: 10px;
   grid-template-columns: repeat(2, auto);
   gap: 12px;
 }
-
 
 #page {
   display: flex;

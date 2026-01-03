@@ -37,9 +37,8 @@ message.value = response.data.message;
 
 <fieldset>
   <legend>Add New Tag</legend>
-  <input v-model="tagLabel" placeholder="Tag label" />
   <input v-model="tagCategory" placeholder="Category" />
-  <button type="button" @click="addTag">Add Label</button>
+  <input v-model="tagLabel" placeholder="Tag label" />
   <button type="button" @click="addTag">Add Label</button>
 </fieldset>
 
