@@ -89,9 +89,14 @@ app.post("/exercises", auth, async (c) => {
   const h_note = args["h_note"];
   const l_note = args["l_note"];
   const db = c.env.DB;
+  const tagIDs = args["tag_ids"] || [];
   const result = await db.prepare("INSERT INTO exercise(abc, userID, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id").bind(abc, user.id, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note).run();
   if (!result.success) {
     return c.text("Cannot create exercise", 500);
+  }
+  const exerciseID = result.results[0].id;
+  for (const tagID of tagIDs) {
+    const tagResult = await db.prepare("INSERT INTO exercise_tag(exerciseID, tagID) VALUES(?, ?)").bind(exerciseID, tagID).run();
   }
   return c.json({ id: result.results[0].id });
 });
@@ -124,5 +129,6 @@ app.post("/tags", async (c) => {
 });
 
 // Exercise Tags routes
+
 
 export default app;

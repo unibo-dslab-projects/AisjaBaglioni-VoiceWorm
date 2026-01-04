@@ -64,18 +64,6 @@ let timer = null;
 
 const message = ref('');
 
-function onSubmit() {
-    /*console.log("On Submit");
-    console.log("User text:\n", userText.value);
-    console.log("Visibility:", visibility.value);
-    console.log("BPM:", bpm.value);
-    console.log("Ascending steps:", ascendingSteps.value);
-    console.log("Descending steps:", descendingSteps.value);
-    console.log("Starting semitones:", startingSemitones.value);
-    console.log("Highest semitones:", highestSemitones.value);
-    console.log("Lowest semitones:", lowestSemitones.value);*/
-    submitExercise();
-}
 
 // Funzione per inviare l'esercizio al backend
 async function submitExercise() {
@@ -90,7 +78,8 @@ const response = await axios.post(
         d_steps: descendingSteps.value,
         s_note: startingSemitones.value,
         h_note: highestSemitones.value,
-        l_note: lowestSemitones.value
+        l_note: lowestSemitones.value,
+        tag_ids: Object.keys(selectedTags.value).filter(tagID => selectedTags.value[tagID])
       },
       {
         headers: {
@@ -98,8 +87,17 @@ const response = await axios.post(
         }
       }
     );
-    message.value = response.data.message;
-    router.push('/');
+    //router.push('/');
+    console.log("Exercise submitted:", response.data.id);
+    console.log("Selected tags:", selectedTags.value);
+    console.log("Text submitted:\n", userText.value);
+    console.log("Visibility:", visibility.value);
+    console.log("BPM:", bpm.value);
+    console.log("Ascending steps:", ascendingSteps.value);
+    console.log("Descending steps:", descendingSteps.value);
+    console.log("Starting semitones:", startingSemitones.value);
+    console.log("Highest semitones:", highestSemitones.value);
+    console.log("Lowest semitones:", lowestSemitones.value);
   } catch (error) {
     message.value = error.response.data ?? 'Submit exercise failed';
     console.error('Submit exercise error:', error);
@@ -676,7 +674,7 @@ function togglePause() {
       </div>
 
       <div>
-      <button id="submit-button" @click="onSubmit">Submit Exercise</button>
+      <button id="submit-button" @click="submitExercise">Submit Exercise</button>
         </div>
     </fieldset>
 
