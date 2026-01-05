@@ -12,6 +12,7 @@ import axios from 'axios';
 const credentials = useCredentials();
 const router = useRouter();
 
+const exerciseName = ref("New Exercise");
 //Testo scritto dall'utente
 const userText = ref("X:1\nK:C\n|cdcdz2z2|\n");
 //Testo renderizzato da abc
@@ -67,10 +68,13 @@ const message = ref('');
 
 // Funzione per inviare l'esercizio al backend
 async function submitExercise() {
+
+  console.log("Exercise name:", exerciseName.value);
   try {
 const response = await axios.post(
       import.meta.env.VITE_API_BASE_URL + '/exercises',
       {
+        name: exerciseName.value,
         abc: userText.value,
         is_public: Number(visibility.value),
         bpm: bpm.value,
@@ -87,17 +91,7 @@ const response = await axios.post(
         }
       }
     );
-    //router.push('/');
-    console.log("Exercise submitted:", response.data.id);
-    console.log("Selected tags:", selectedTags.value);
-    console.log("Text submitted:\n", userText.value);
-    console.log("Visibility:", visibility.value);
-    console.log("BPM:", bpm.value);
-    console.log("Ascending steps:", ascendingSteps.value);
-    console.log("Descending steps:", descendingSteps.value);
-    console.log("Starting semitones:", startingSemitones.value);
-    console.log("Highest semitones:", highestSemitones.value);
-    console.log("Lowest semitones:", lowestSemitones.value);
+    router.push('/');
   } catch (error) {
     message.value = error.response.data ?? 'Submit exercise failed';
     console.error('Submit exercise error:', error);
@@ -494,6 +488,11 @@ function togglePause() {
     <div id="page">
       <h1>VoiceWorm</h1>
       <fieldset>
+      <legend>Exercise Name</legend>
+      <input type ="text" id="exerciseName" class="text" v-model="exerciseName"/>
+    </fieldset>
+
+      <fieldset>
       <legend>Input ABC Notation</legend>
       <textarea id="exerciseInput" class="text" v-model="userText"></textarea>
       <br>
@@ -686,13 +685,12 @@ function togglePause() {
 <style scoped>
 
 fieldset {
-  width: 80%;
-  padding: 10px;
+  padding: 20px;
+  width: 100%;
 }
 
 .text {
   width: 50%;
-  height: 100px;
 }
 
 #starting-control, #highest-control, #lowest-control, #step-control, #visibility, #bpm-control, #buttons {
@@ -724,7 +722,6 @@ fieldset {
 #container {
   margin: 10px;
   position: relative;
-  width: fit-content;
   min-height: 50px;
   border: 1px solid #ddd;
   background-color: white;

@@ -8,6 +8,7 @@ CREATE TABLE user (
 
 CREATE TABLE exercise (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
     abc TEXT NOT NULL,      
     userID INTEGER NOT NULL,
     is_public INTEGER NOT NULL DEFAULT 0,

@@ -76,10 +76,12 @@ app.post("/login", async (c) => {
 
 // User routes
 
+
 // Exercise routes
 app.post("/exercises", auth, async (c) => {
   const user = c.get("user");
   const args = await c.req.json();
+  const name = args["name"];
   const abc = args["abc"];
   const is_public = args["is_public"];
   const bpm = args["bpm"];
@@ -90,21 +92,73 @@ app.post("/exercises", auth, async (c) => {
   const l_note = args["l_note"];
   const db = c.env.DB;
   const tagIDs = args["tag_ids"] || [];
-  const result = await db.prepare("INSERT INTO exercise(abc, userID, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id").bind(abc, user.id, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note).run();
+  const result = await db.prepare("INSERT INTO exercise(name, abc, userID, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id").bind(name, abc, user.id, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note).run();
   if (!result.success) {
     return c.text("Cannot create exercise", 500);
   }
   const exerciseID = result.results[0].id;
   for (const tagID of tagIDs) {
     const tagResult = await db.prepare("INSERT INTO exercise_tag(exerciseID, tagID) VALUES(?, ?)").bind(exerciseID, tagID).run();
+    if (!tagResult.success) {
+      return c.text("Cannot create exercise tag", 500);
+    }
   }
   return c.json({ id: result.results[0].id });
 });
 
+app.get("/exercises", auth, async (c) => {
+  const user = c.get("user");
+  const db = c.env.DB;
+
+  const result = await db.prepare(`
+    SELECT 
+      exercise.id,
+      exercise.name,
+      exercise.abc,
+      exercise.is_public,
+      exercise.bpm,
+      exercise.a_steps,
+      exercise.d_steps,
+      exercise.s_note,
+      exercise.h_note,
+      exercise.l_note,
+      user.username AS username,
+      (
+        SELECT json_group_array(
+          json_object(
+            'id', tag.id,
+            'label', tag.label,
+            'category', tag.category
+          )
+        )
+        FROM exercise_tag
+        LEFT JOIN tag ON exercise_tag.tagID = tag.id
+        WHERE exercise_tag.exerciseID = exercise.id
+      ) AS tags
+    FROM exercise
+    LEFT JOIN user ON exercise.userID = user.id
+    WHERE (exercise.is_public = 1 OR exercise.userID = ?)
+  `).bind(user.id).run();
+
+  if (!result.success) {
+    return c.text("Cannot retrieve exercises", 500);
+  }
+
+  // SQLite restituisce JSON come stringa → parse
+  const exercises = result.results.map(e => ({
+    ...e,
+    tags: e.tags ? JSON.parse(e.tags) : []
+  }));
+
+  return c.json(exercises);
+});
+
+
+
 // Favorite routes
 
 // Tags routes
-app.get("/tags", async (c) => {
+app.get("/tags", auth, async (c) => {
   const db = c.env.DB;
   const result = await db.prepare("SELECT id, category, label FROM tag").run();
   if (!result.success) {
@@ -113,7 +167,7 @@ app.get("/tags", async (c) => {
   return c.json(result.results);
 });
 
-app.post("/tags", async (c) => {
+app.post("/tags", auth, async (c) => {
   const args = await c.req.json();
   const category = args["category"];
   const label = args["label"];
