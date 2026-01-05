@@ -9,9 +9,18 @@ import { Input, Score, Note, Tuplet, Chord } from '@/lib/abcp';
 import { KEYS } from '@/lib/keys';
 import axios from 'axios';
 
+
 const credentials = useCredentials();
 const router = useRouter();
 
+const client = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+    headers: {
+        'Authorization': `Bearer ${credentials.token}`
+    }
+});
+
+//Nome dell'esercizio
 const exerciseName = ref("New Exercise");
 //Testo scritto dall'utente
 const userText = ref("X:1\nK:C\n|cdcdz2z2|\n");
@@ -53,12 +62,18 @@ const lowestSemitones = computed(() =>
 );
 
 
-
 //Tags e visibilità
 const visibility = ref("1")
 const allTags = ref([]);
 const selectedTags = ref({});
-
+const groupedTags = computed(() => {
+  const groups = {};
+  allTags.value.forEach(tag => {
+    if (!groups[tag.category]) groups[tag.category] = [];
+    groups[tag.category].push(tag);
+  });
+  return groups;
+});
 
 //Timer del synth, da resettare a ogni nuovo play
 let timer = null; 
@@ -68,49 +83,40 @@ const message = ref('');
 
 // Funzione per inviare l'esercizio al backend
 async function submitExercise() {
-
-  console.log("Exercise name:", exerciseName.value);
   try {
-const response = await axios.post(
-      import.meta.env.VITE_API_BASE_URL + '/exercises',
-      {
-        name: exerciseName.value,
-        abc: userText.value,
-        is_public: Number(visibility.value),
-        bpm: bpm.value,
-        a_steps: ascendingSteps.value,
-        d_steps: descendingSteps.value,
-        s_note: startingSemitones.value,
-        h_note: highestSemitones.value,
-        l_note: lowestSemitones.value,
-        tag_ids: Object.keys(selectedTags.value).filter(tagID => selectedTags.value[tagID])
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${credentials.token}`
-        }
-      }
-    );
+    await client.post('/exercises', {
+      name: exerciseName.value,
+      abc: userText.value,
+      is_public: Number(visibility.value),
+      bpm: bpm.value,
+      a_steps: ascendingSteps.value,
+      d_steps: descendingSteps.value,
+      s_note: startingSemitones.value,
+      h_note: highestSemitones.value,
+      l_note: lowestSemitones.value,
+      tag_ids: Object.keys(selectedTags.value)
+        .filter(tagID => selectedTags.value[tagID])
+    });
+
     router.push('/');
   } catch (error) {
-    message.value = error.response.data ?? 'Submit exercise failed';
+    message.value = error?.response?.data ?? 'Submit exercise failed';
     console.error('Submit exercise error:', error);
   }
 }
+
+
 // Funzione per ottenere i tag dal backend
 async function fetchTags() {
   try {
-    const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/tags');
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
-    return data;
+    const response = await client.get('/tags');
+    return response.data;
   } catch (error) {
-    console.error('Error fetching tags:', error);
+    console.error('Error fetching tags:', error?.response || error);
     return [];
   }
 }
+
 
 // Funzione per loggare i tag
  async function logTags() {
@@ -131,16 +137,6 @@ onMounted(() => {
     console.log("Lowest semitones:", lowestSemitones.value);*/
 });
 
-
-
-const groupedTags = computed(() => {
-  const groups = {};
-  allTags.value.forEach(tag => {
-    if (!groups[tag.category]) groups[tag.category] = [];
-    groups[tag.category].push(tag);
-  });
-  return groups;
-});
 
 // Renderizza lo spartito all'avvio o quando richiesto
 async function renderScore() {

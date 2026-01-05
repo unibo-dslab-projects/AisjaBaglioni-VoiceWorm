@@ -48,6 +48,14 @@ const router = createRouter({
       meta: {
         noAuth: false,
       }
+    },
+    {
+      path: '/exercise/:id',
+      name: 'exercise',
+      component: ExercisesView,
+      meta: {
+        noAuth: false,
+      }
     }
   ],
 })

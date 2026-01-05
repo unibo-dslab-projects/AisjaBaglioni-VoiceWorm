@@ -1,46 +1,164 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
+import { useCredentials } from '@/stores/credentials';
+import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import abcjs from "abcjs";
 import { nextTick } from 'vue';
 import lodash from 'lodash';
 import { Input, Score, Note, Tuplet, Chord } from '@/lib/abcp';
 import { KEYS } from '@/lib/keys';
+import axios from 'axios';
 
+const isOwner = ref(false);
+const route = useRoute();
+const credentials = useCredentials();
+
+const router = useRouter();
+
+const client = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+    headers: {
+        'Authorization': `Bearer ${credentials.token}`
+    }
+});
+
+const exercise_id = ref(route.params.id);
+const exercise_info = ref(null);
+const message = ref('');
+
+async function loadExercise() {
+    try {
+        const response = await client.get(`/exercise/${exercise_id.value}`);
+        exercise_info.value = response.data;
+    } catch (error) {
+        message.value = error?.response?.data ?? 'Load exercise failed';
+        console.error('Load exercise error:', error);
+    }
+}
+
+
+
+//Nome dell'esercizio
+const exerciseName = ref(null);
 //Testo scritto dall'utente
-const userText = ref("X:1\nK:C\n|cdcdz2z2|\n");
+const userText = ref(null);
 //Testo renderizzato da abc
 const renderedText = ref(null);
 //Synth controller
 const synth = ref(null);
 const isPaused = ref(false); 
+const isPlaying = ref(false); 
 //Dimensione e posizione della scrollbar
 const scrollbarLeft = ref(null);
 const scrollbarTop = ref(null);
 const scrollbarHeight = ref(null);
 //BPM e conversioni tra note e pitch
-const bpm = ref(120);
+const bpm = ref(null);
 //Step per la generazione delle trasposizioni
-const ascendingSteps = ref(1);
-const descendingSteps = ref(1);
+const ascendingSteps = ref(null);
+const descendingSteps = ref(null);
 
 //Parametri inseriti dall'utente nelle select - C4 e C5 default
-const startingNote = ref(0);
-const startingOctave = ref(4);
-const highestNote = ref(0);
-const highestOctave = ref(5);
-const lowestNote = ref(0);
-const lowestOctave = ref(3);
+const startingNote = ref(null);
+const startingOctave = ref(null);
+const highestNote = ref(null);
+const highestOctave = ref(null);
+const lowestNote = ref(null);
+const lowestOctave = ref(null);
+//Valori in semitoni MIDI delle note selezionate
+const startingSemitones = computed(() =>
+  inputToSemitones(startingNote.value, startingOctave.value)
+);
+
+const highestSemitones = computed(() =>
+  inputToSemitones(highestNote.value, highestOctave.value)
+);
+
+const lowestSemitones = computed(() =>
+  inputToSemitones(lowestNote.value, lowestOctave.value)
+);
+
+
+//Tags e visibilità
+const visibility = ref("1")
+const allTags = ref([]);
+const selectedTags = ref({});
+const groupedTags = computed(() => {
+  const groups = {};
+  allTags.value.forEach(tag => {
+    if (!groups[tag.category]) groups[tag.category] = [];
+    groups[tag.category].push(tag);
+  });
+  return groups;
+});
 
 //Timer del synth, da resettare a ogni nuovo play
 let timer = null; 
 
-onMounted(() => {
-  renderScore();
+// Funzione per ottenere i tag dal backend
+async function fetchTags() {
+  try {
+    const response = await client.get('/tags');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching tags:', error?.response || error);
+    return [];
+  }
+}
+
+// Funzione per loggare i tag
+ async function logTags() {
+    allTags.value = await fetchTags();
+ }
+
+const groupedExerciseTags = computed(() => {
+  if (!exercise_info.value?.tags) return {};
+    const groups = {};
+      exercise_info.value.tags.forEach(tag => {
+        if (!groups[tag.category]) groups[tag.category] = [];
+        groups[tag.category].push(tag);
+      });
+
+  return groups;
 });
+
+
+onMounted(async () => {
+    await loadExercise();
+    logTags();
+    exerciseName.value = exercise_info.value.name;
+    userText.value = exercise_info.value.abc;
+    visibility.value = exercise_info.value.is_public;
+    bpm.value = exercise_info.value.bpm;
+    ascendingSteps.value = exercise_info.value.a_steps;
+    descendingSteps.value = exercise_info.value.d_steps;
+    startingNote.value = semitonesToInput(exercise_info.value.s_note).n;
+    startingOctave.value = semitonesToInput(exercise_info.value.s_note).o;
+    highestNote.value = semitonesToInput(exercise_info.value.h_note).n;
+    highestOctave.value = semitonesToInput(exercise_info.value.h_note).o;
+    lowestNote.value = semitonesToInput(exercise_info.value.l_note).n;
+    lowestOctave.value = semitonesToInput(exercise_info.value.l_note).o;
+    selectedTags.value = Object.fromEntries(
+        exercise_info.value.tags.map(tag => [tag.id, true])
+    );
+    isOwner.value = credentials.data.id === exercise_info.value.user_id;
+    renderScore();
+    console.log(groupedExerciseTags.value);
+});
+
+watch(
+    () => route.params.id,
+    async (new_id, _) => {
+        exercise_info.value = null;
+        exercise_id.value = new_id;
+        await loadExercise();
+    }
+)
+
 
 // Renderizza lo spartito all'avvio o quando richiesto
 async function renderScore() {
-  isPaused.value = false;
   stopSynthAndTimer();
 
   var options = {
@@ -69,7 +187,6 @@ async function renderScore() {
 // Reset dello spartito
 function resetToDefault() {
   userText.value = "X:1\nK:C\n|cdcdz2z2|\n";
-  isPaused.value = false;
   renderScore();
 }
 
@@ -82,6 +199,10 @@ function stopSynthAndTimer() {
     timer.stop();
     timer = null;
   }
+
+  isPaused.value = false;
+  isPlaying.value = false;
+
   scrollbarLeft.value = null;
   scrollbarTop.value = null;
   scrollbarHeight.value = null;
@@ -108,7 +229,9 @@ function resumeSynthAndTimer() {
 
 // Fa partire il timer e il synth, e di conseguenza l'audio
 function play() {
-  stopSynthAndTimer();
+    stopSynthAndTimer();
+    isPlaying.value = true;
+
   if (!renderedText.value) return;
   
   if (!synth.value) {
@@ -146,7 +269,11 @@ function startTimingCallbacks(visualObj) {
           scrollbarHeight.value = Math.round(ev.height);
         });
       }
-    }
+    },
+    endCallback: () => {
+    isPlaying.value = false; 
+    isPaused.value = false;
+  }
   });
 
   synth.value.prime()
@@ -239,6 +366,18 @@ function inputToSemitones(note, octave) {
   return (parseInt(octave)) * 12 + parseInt(note);
 }
 
+function semitonesToInput(semitones) {
+  const octaveNum = Math.floor(semitones / 12);
+  const noteIndex = ((semitones % 12) + 12) % 12;
+
+  return {
+    n: noteIndex,
+    o: octaveNum
+  };
+}
+
+
+
 // Calcola la differenza di semitoni tra due note
 function getSemitoneDifference(note1, note2) {
   if (note1 === null || note2 === null) return null;
@@ -310,18 +449,20 @@ function transposeAndRender() {
   }
 
   // Calcola l'intervallo di semitoni di partenza
+  startingSemitones.value = inputToSemitones(startingNote.value, startingOctave.value);
   const startingInterval = getSemitoneDifference(
     first_note,
-    inputToSemitones(startingNote.value, startingOctave.value)
+    startingSemitones.value
   );
 
   // Traspone lo score alla nota di partenza
   score.transpose(startingInterval);
 
   // Calcola l'intervallo di semitoni per la nota più alta
+  highestSemitones.value = inputToSemitones(highestNote.value, highestOctave.value);
   const highestInterval = getSemitoneDifference(
     highest_note + startingInterval,
-    inputToSemitones(highestNote.value, highestOctave.value)
+    highestSemitones.value
   );
 
   // Traspone lo score fino alla nota più alta
@@ -337,9 +478,10 @@ function transposeAndRender() {
   }
 
   // Calcola l'intervallo di semitoni per la nota più bassa
+  lowestSemitones.value = inputToSemitones(lowestNote.value, lowestOctave.value);
   const lowestInterval = getSemitoneDifference(
     lowest_note + startingInterval,
-    inputToSemitones(lowestNote.value, lowestOctave.value)
+    lowestSemitones.value
   );
 
   // Traspone lo score fino alla nota più bassa
@@ -372,17 +514,21 @@ function togglePause() {
   <main>
     <div id="page">
       <h1>VoiceWorm</h1>
-      <textarea id="exerciseInput" class="text" v-model="userText"></textarea> <br>
-      <div id="buttons">
-        <button type="button" @click="renderScore">Enter</button>
-        <button type="button" @click="transposeAndRender">Generate</button>
-        <button type="button" @click="play">Play</button>
-        <button @click="togglePause">{{ isPaused ? 'Resume' : 'Pause' }}</button>
-        <button type="button" @click="resetToDefault">Reset</button>
-        <button type="button" @click="downloadWav">Save WAV</button>
-        <button type="button" @click="downloadSvg">Save SVG</button>
-      </div>
-      <div id="bpm-control">
+      <fieldset>
+      <legend>Exercise Name</legend>
+      <div v-if="!isOwner"><p class="readonly-name">{{ exerciseName }}</p></div>
+      <input v-else type="text" id="exerciseName" class="text" v-model="exerciseName"/>
+    </fieldset>
+
+      <fieldset>
+      <legend>Input ABC Notation</legend>
+      <textarea id="exerciseInput" class="text" v-model="userText"></textarea>
+      <br>
+      <button type="button" @click="renderScore">Enter</button>
+    </fieldset>
+    <fieldset>
+    <legend>Tempo and Steps</legend>
+    <div id="bpm-control">
         <label for="bpm">BPM: </label>
         <input
       id="bpm"
@@ -400,24 +546,26 @@ function togglePause() {
       max="300"
       step="1"
     />
+    </div>
 
     <div id="step-control">
         <div id="ascending-step">
-        <label>Ascending steps:</label>
-        <select v-model.number="ascendingSteps">
+        <label for="ascending_steps">Ascending steps: </label>
+        <select v-model.number="ascendingSteps" name="ascending_steps" id="ascending_steps">
           <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
         </select>
         </div>
-        <div id="descending-step">
-        <label>Descending steps:</label>
-        <select v-model.number="descendingSteps">
+        <div id="descending_step">
+        <label for="descending_steps">Descending steps: </label>
+        <select v-model.number="descendingSteps" name="descending_steps" id="descending_steps">
           <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
         </select>
       </div>
     </div>
+    </fieldset>
 
-
-
+<fieldset>
+    <legend>Transposition Range</legend>
     <div id="starting-control">
     <label for="starting_note">Starting note: </label>
     <select v-model="startingNote" name="starting_note" id="starting_note">
@@ -444,7 +592,7 @@ function togglePause() {
       <option value="6">6</option>
       <option value="7">7</option>
     </select>
-</div>
+    </div>
 
     <div id="highest-control">
     <label for="highest_note">Highest note: </label>
@@ -501,37 +649,111 @@ function togglePause() {
       <option value="7">7</option>
     </select>
 </div>
+</fieldset>
 
- </div>
+<fieldset>
+      <legend>Actions</legend>
+      <div id="buttons">
+        <button type="button" @click="transposeAndRender">Generate</button>
+        <button type="button" @click="resetToDefault">Reset</button>
+        <button type="button" @click="play">Play</button>
+        <button :disabled="!isPlaying" @click="togglePause">{{ isPaused ? 'Resume' : 'Pause' }}</button>
+        <button type="button" @click="downloadWav">Save WAV</button>
+        <button type="button" @click="downloadSvg">Save SVG</button>
+      </div>
+</fieldset>
+
+<fieldset>
+    <legend>Rendered Score</legend>
     <div id="container">
       <div id="target"></div>
       <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
     </div>
-  </div>
+</fieldset>
 
+    <fieldset>
+        <legend>Tags</legend>
+        <fieldset v-if="isOwner" v-for="(tags, category) in groupedTags" :key="category" class="tag-group">
+            <legend>{{ category }}</legend>
+            <div v-for="tag in tags" :key="tag.id" class="tag-label"><input type="checkbox" v-model="selectedTags[tag.id]"/>{{ tag.label }}</div>
+        </fieldset>
+        
+      <div v-else>
+        <div v-if="exercise_info?.tags?.length > 0">
+          <fieldset v-for="(tags, category) in groupedExerciseTags" :key="category" class="tag-group">
+            <legend>{{ category }}</legend>
+            <div v-for="tag in tags" :key="tag.id" class="tag-label">{{ tag.label }}</div>
+          </fieldset>
+        </div>
+        <div v-else>
+          <p>No tags</p>
+        </div>
+      </div>
+
+
+
+    </fieldset>
+
+
+    <fieldset v-if="isOwner">
+      <legend>Visibility</legend>
+
+      <div id="visibility">
+      <input
+        type="radio"
+        id="public"
+        :value="1"
+        v-model="visibility"
+      />
+      <label for="public">Public</label>
+
+      <input
+        type="radio"
+        id="private"
+        :value="0"
+        v-model="visibility"
+      />
+      <label for="private">Private</label>
+      </div>
+
+      <div>
+      <button id="submit-button" @click="submitExercise">Submit Exercise</button>
+        </div>
+    </fieldset>
+
+    </div> 
   </main>
 </template>
 
 
 <style scoped>
 
-.text {
-  width: 50%;
-  height: 100px;
+fieldset {
+  padding: 20px;
+  width: 100%;
 }
 
-#starting-control, #highest-control, #lowest-control {
+.text {
+  width: 50%;
+}
+
+#starting-control, #highest-control, #lowest-control, #step-control, #visibility, #bpm-control, #buttons {
   padding: 10px;
 }
 
-#bpm-control {
-  padding: 20px;
+#submit-button {
+  margin-left: 10px;
+}
+
+#ascending-step, #descending_step {
+  display: inline-block;
+  margin-right: 20px;
 }
 
 #buttons {
-  display: flex;
-  gap: 20px;
-  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 12px;
 }
 
 #page {
@@ -544,7 +766,6 @@ function togglePause() {
 #container {
   margin: 10px;
   position: relative;
-  width: fit-content;
   min-height: 50px;
   border: 1px solid #ddd;
   background-color: white;
@@ -558,4 +779,11 @@ function togglePause() {
   left: 10px;
   z-index: 10;
 }
+
+.readonly-name {
+  margin: 0;
+  padding: 0;
+}
+
+
 </style>

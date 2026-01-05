@@ -1,12 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useCredentials } from '@/stores/credentials';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 const credentials = useCredentials();
 const router = useRouter();
 const MAX_TAGS = 3;
-
+const client = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
+    headers: {
+        'Authorization': `Bearer ${credentials.token}`
+    }
+});
 
 function logout() {
     credentials.logout();
@@ -24,28 +30,17 @@ const exercises = ref([]);
 
 async function fetchExercises() {
   try {
-    const response = await fetch(
-      import.meta.env.VITE_API_BASE_URL + '/exercises',
-      {
-        headers: {
-          Authorization: `Bearer ${credentials.token}`
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    exercises.value = data;
+    const response = await client.get('/exercises');
+    exercises.value = response.data;
   } catch (error) {
     console.error('Error fetching exercises:', error);
   }
 }
 
-
 onMounted(fetchExercises);
+
+const reversedExercises = computed(() => [...exercises.value].reverse());
+
 
 </script>
 
@@ -69,8 +64,13 @@ onMounted(fetchExercises);
         </tr>
       </thead>
       <tbody>
-        <tr v-for="exercise in exercises" :key="exercise.id">
-          <td>{{ exercise.name }}</td>
+        <tr v-for="exercise in reversedExercises" :key="exercise.id">
+          <td><router-link
+            :to="`/exercise/${exercise.id}`"
+            class="exercise-link">
+            {{ exercise.name }}
+          </router-link>
+          </td>
           <td>{{ exercise.username }}</td>
           <td class="tags-cell">
             <span

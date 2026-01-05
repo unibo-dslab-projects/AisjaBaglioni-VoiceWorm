@@ -144,7 +144,6 @@ app.get("/exercises", auth, async (c) => {
     return c.text("Cannot retrieve exercises", 500);
   }
 
-  // SQLite restituisce JSON come stringa → parse
   const exercises = result.results.map(e => ({
     ...e,
     tags: e.tags ? JSON.parse(e.tags) : []
@@ -153,7 +152,47 @@ app.get("/exercises", auth, async (c) => {
   return c.json(exercises);
 });
 
-
+app.get("/exercise/:id", auth, async (c) => {
+  const user = c.get("user");
+  const exercise_id = c.req.param("id");
+  const db = c.env.DB;
+  const result = await db.prepare(`
+    SELECT 
+      exercise.id,
+      exercise.userID as user_id,
+      exercise.name,
+      exercise.abc,
+      exercise.is_public,
+      exercise.bpm,
+      exercise.a_steps,
+      exercise.d_steps,
+      exercise.s_note,
+      exercise.h_note,
+      exercise.l_note,
+      user.username AS username,
+      (
+        SELECT json_group_array(
+          json_object(
+            'id', tag.id,
+            'label', tag.label,
+            'category', tag.category
+          )
+        )
+        FROM exercise_tag
+        LEFT JOIN tag ON exercise_tag.tagID = tag.id
+        WHERE exercise_tag.exerciseID = exercise.id
+      ) AS tags
+    FROM exercise
+    LEFT JOIN user ON exercise.userID = user.id
+    WHERE exercise.id = ? AND (exercise.is_public = 1 OR exercise.userID = ?)
+  `).bind(exercise_id, user.id).run();
+  if (!result.success || result.results.length !== 1) {
+    return c.text("Exercise not found", 404);
+  }
+  const exercise = result.results[0];
+  exercise.tags = exercise.tags ? JSON.parse(exercise.tags) : [];
+  return c.json(exercise);
+});
 
 // Favorite routes
 
