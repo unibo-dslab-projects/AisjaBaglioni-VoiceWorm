@@ -97,7 +97,6 @@ async function submitExercise() {
       tag_ids: Object.keys(selectedTags.value)
         .filter(tagID => selectedTags.value[tagID])
     });
-
     router.push('/');
   } catch (error) {
     message.value = error?.response?.data ?? 'Submit exercise failed';
@@ -418,7 +417,6 @@ function transposeAndRender() {
   }
 
   // Calcola l'intervallo di semitoni di partenza
-  startingSemitones.value = inputToSemitones(startingNote.value, startingOctave.value);
   const startingInterval = getSemitoneDifference(
     first_note,
     startingSemitones.value
@@ -428,7 +426,6 @@ function transposeAndRender() {
   score.transpose(startingInterval);
 
   // Calcola l'intervallo di semitoni per la nota più alta
-  highestSemitones.value = inputToSemitones(highestNote.value, highestOctave.value);
   const highestInterval = getSemitoneDifference(
     highest_note + startingInterval,
     highestSemitones.value
@@ -447,7 +444,6 @@ function transposeAndRender() {
   }
 
   // Calcola l'intervallo di semitoni per la nota più bassa
-  lowestSemitones.value = inputToSemitones(lowestNote.value, lowestOctave.value);
   const lowestInterval = getSemitoneDifference(
     lowest_note + startingInterval,
     lowestSemitones.value
@@ -670,7 +666,8 @@ function togglePause() {
 
       <div>
       <button id="submit-button" @click="submitExercise">Submit Exercise</button>
-        </div>
+      <div v-if="message" class="status-message">{{ message }}</div>
+      </div>
     </fieldset>
 
     </div> 

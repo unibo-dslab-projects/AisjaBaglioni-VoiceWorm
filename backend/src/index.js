@@ -194,6 +194,64 @@ app.get("/exercise/:id", auth, async (c) => {
   return c.json(exercise);
 });
 
+
+app.put("/exercise/:id", auth, async (c) => {
+  const user = c.get("user");
+  const exercise_id = c.req.param("id");
+  const args = await c.req.json();
+
+  const name = args["name"];
+  const abc = args["abc"];
+  const is_public = args["is_public"];
+  const bpm = args["bpm"];
+  const a_steps = args["a_steps"];
+  const d_steps = args["d_steps"];
+  const s_note = args["s_note"];
+  const h_note = args["h_note"];
+  const l_note = args["l_note"];
+  const newTagIDs = args["tag_ids"] || [];
+  const db = c.env.DB;
+
+  const result = await db.prepare("UPDATE exercise SET name = ?, abc = ?, is_public = ?, bpm = ?, a_steps = ?, d_steps = ?, s_note = ?, h_note = ?, l_note = ? WHERE id = ? AND userID = ?").bind(name, abc, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note, exercise_id, user.id).run();
+  if (!result.success) {
+    return c.text("Cannot update exercise", 500);
+  }
+
+  const oldTags = await db.prepare("SELECT tagID FROM exercise_tag WHERE exerciseID = ?").bind(exercise_id).run();
+  if (!oldTags.success) {
+    return c.text("Cannot retrieve old tags", 500);
+  }
+
+
+  const oldTagIDs = oldTags.results.map(row => row.tagID);
+  console.log("Old Tag IDs:", oldTagIDs);
+  console.log("New Tag IDs:", newTagIDs);
+
+  const toAdd = newTagIDs.filter(id => !oldTagIDs.includes(id));
+  const toRemove = oldTagIDs.filter(id => !newTagIDs.includes(id));
+
+
+  for (const tagID of toRemove) {
+    const tagResult = await db
+      .prepare("DELETE FROM exercise_tag WHERE exerciseID = ? AND tagID = ?")
+      .bind(exercise_id, tagID)
+      .run();
+    if (!tagResult.success) return c.text("Cannot remove old tag", 500);
+  }
+
+  for (const tagID of toAdd) {
+    console.log("Adding tag:", tagID);
+    const tagResult = await db
+      .prepare("INSERT INTO exercise_tag(exerciseID, tagID) VALUES(?, ?)")
+      .bind(exercise_id, tagID)
+      .run();
+    if (!tagResult.success) return c.text("Cannot add new tag", 500);
+  }
+
+
+  return c.text("Exercise updated successfully");
+});
+
 // Favorite routes
 
 // Tags routes
