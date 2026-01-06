@@ -2,11 +2,14 @@
 import { ref, onMounted, computed } from 'vue';
 import { useCredentials } from '@/stores/credentials';
 import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const credentials = useCredentials();
 const router = useRouter();
+const route = useRoute();
 const MAX_TAGS = 3;
+
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
@@ -14,56 +17,25 @@ const client = axios.create({
     }
 });
 
-function logout() {
-    credentials.logout();
-    router.push('/login');
-}
-
-function create() {
-    router.push('/create');
-}
-
-function addStuff() {
-    router.push('/add-stuff');
-}
-
-function favorites() {
-    router.push('/favorites');
-}
-
 const exercises = ref([]);
 
-async function fetchExercises() {
+async function fetchFavorites() {
   try {
-    const response = await client.get('/exercises');
+    const response = await client.get('/favorites');
     exercises.value = response.data;
   } catch (error) {
-    console.error('Error fetching exercises:', error);
+    console.error('Error fetching favorites:', error);
   }
 }
 
 onMounted(async () => {
-  await fetchExercises();
+  await fetchFavorites();
 });
-
-
-//const reversedExercises = computed(() => [...exercises.value].reverse());
-
-
 </script>
 
 <template>
     <main id="page">
-    <h1>Search Page</h1>
-    <fieldset>
-      <legend>Menu</legend>
-      <button @click="create">Create</button>
-      <button @click="addStuff">Add Stuff</button>
-      <button @click="logout">Logout</button>
-      <button @click="favorites">Favorites</button>
-    </fieldset>
-
-
+    <h1>Favorite Exercises</h1>
     <table>
       <thead>
         <tr>
@@ -116,8 +88,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-
-#page {
+    #page {
   display: flex;
   flex-direction: column;
   align-items: center;       
@@ -170,5 +141,4 @@ onMounted(async () => {
 .tag.more:hover .tooltip {
   opacity: 1;
 }
-
 </style>

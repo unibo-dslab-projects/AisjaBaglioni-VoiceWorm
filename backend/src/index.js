@@ -320,6 +320,84 @@ app.put("/exercise/:id", auth, async (c) => {
 });
 
 // Favorite routes
+app.post("/favorites/:exerciseid", auth, async (c) => {
+  const user = c.get("user");
+  const exercise_id = c.req.param("exerciseid");
+  const db = c.env.DB;
+  const result = await db.prepare("INSERT INTO favorite(userID, exerciseID) VALUES(?, ?)").bind(user.id, exercise_id).run();
+  if (!result.success) {
+    return c.text("Cannot add favorite", 500);
+  }
+  return c.text("Favorite added successfully");
+});
+
+app.delete("/favorites/:exerciseid", auth, async (c) => {
+  const user = c.get("user");
+  const exercise_id = c.req.param("exerciseid");
+  const db = c.env.DB;
+  const result = await db.prepare("DELETE FROM favorite WHERE userID = ? AND exerciseID = ?").bind(user.id, exercise_id).run();
+  if (!result.success) {
+    return c.text("Cannot remove favorite", 500);
+  }
+  return c.text("Favorite removed successfully");
+});
+
+app.get("/favorites", auth, async (c) => {
+  const user = c.get("user");
+  const db = c.env.DB;
+  const result = await db.prepare(`
+    SELECT 
+      exercise.id,
+      exercise.name,
+      exercise.abc,
+      exercise.is_public,
+      exercise.bpm,
+      exercise.a_steps,
+      exercise.d_steps,
+      exercise.s_note,
+      exercise.h_note,
+      exercise.l_note,
+      exercise.userID as user_id,
+      user.username AS username,
+      (
+        SELECT json_group_array(
+          json_object(
+            'id', tag.id,
+            'label', tag.label,
+            'category', tag.category
+          )
+        )
+        FROM exercise_tag
+        LEFT JOIN tag ON exercise_tag.tagID = tag.id
+        WHERE exercise_tag.exerciseID = exercise.id
+      ) AS tags
+    FROM favorite
+    LEFT JOIN exercise ON favorite.exerciseID = exercise.id
+    LEFT JOIN user ON exercise.userID = user.id
+    WHERE favorite.userID = ?
+    ORDER BY favorite.exerciseID DESC
+  `).bind(user.id).run();
+  if (!result.success) {
+    return c.text("Cannot retrieve favorites", 500);
+  }
+  const exercises = result.results.map(e => ({
+    ...e,
+    tags: e.tags ? JSON.parse(e.tags) : []
+  }));
+  return c.json(exercises);
+});
+
+app.get("/favorites/check/:exerciseid", auth, async (c) => {
+  const user = c.get("user");
+  const exercise_id = c.req.param("exerciseid");
+  const db = c.env.DB;
+  const result = await db.prepare("SELECT COUNT(*) as count FROM favorite WHERE userID = ? AND exerciseID = ?").bind(user.id, exercise_id).run();
+  if (!result.success) {
+    return c.text("Cannot check favorite", 500);
+  }
+  const isFavorite = result.results[0].count > 0;
+  return c.json({ is_favorite: isFavorite });
+});
 
 // Tags routes
 app.get("/tags", auth, async (c) => {

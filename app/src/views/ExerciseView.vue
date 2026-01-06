@@ -24,7 +24,10 @@ const client = axios.create({
 
 const exercise_id = ref(route.params.id);
 const exercise_info = ref(null);
+const is_favorite = ref(false);
+
 const message = ref('');
+const favorites_message = ref('');
 
 async function loadExercise() {
     try {
@@ -36,7 +39,37 @@ async function loadExercise() {
     }
 }
 
+async function addToFavorites() {
+    try {
+        const response = await client.post(`/favorites/${exercise_id.value}`);
+        favorites_message.value = response.data.message;
+        is_favorite.value = true;
+    } catch (error) {
+        favorites_message.value = error?.response?.data ?? 'Add to favorites failed';
+        console.error('Add to favorites error:', error);
+    }
+}
 
+async function removeFromFavorites() {
+    try {
+        const response = await client.delete(`/favorites/${exercise_id.value}`);
+        favorites_message.value = response.data.message;
+        is_favorite.value = false;
+    } catch (error) {
+        favorites_message.value = error?.response?.data ?? 'Remove from favorites failed';
+        console.error('Remove from favorites error:', error);
+    }
+}
+
+async function isFavorite() {
+    try {
+        const response = await client.get(`/favorites/check/${exercise_id.value}`);
+        return response.data.is_favorite;
+    } catch (error) {
+        console.error('Is favorite error:', error);
+        return false;
+    }
+}
 
 //Nome dell'esercizio
 const exerciseName = ref(null);
@@ -124,6 +157,7 @@ const groupedExerciseTags = computed(() => {
 
 onMounted(async () => {
     await loadExercise();
+    is_favorite.value = await isFavorite();
     logTags();
     exerciseName.value = exercise_info.value.name;
     userText.value = exercise_info.value.abc;
@@ -141,6 +175,7 @@ onMounted(async () => {
         exercise_info.value.tags.map(tag => [tag.id, true])
     );
     isOwner.value = credentials.data.id == exercise_info.value.user_id;
+
     renderScore();
 });
 
@@ -691,7 +726,7 @@ function togglePause() {
         <fieldset v-if="isOwner" v-for="(tags, category) in groupedTags" :key="category" class="tag-group">
             <legend>{{ category }}</legend>
             <div v-for="tag in tags" :key="tag.id" class="tag-label"><input type="checkbox" v-model="selectedTags[tag.id]"/>{{ tag.label }}</div>
-        </fieldset>
+    </fieldset>
         
       <div v-else>
         <div v-if="exercise_info?.tags?.length > 0">
@@ -704,9 +739,6 @@ function togglePause() {
           <p>No tags</p>
         </div>
       </div>
-
-
-
     </fieldset>
 
 
@@ -739,6 +771,18 @@ function togglePause() {
 
     </fieldset>
 
+    <fieldset>
+      <legend>Favorites</legend>
+      <div v-if="is_favorite">
+        <p>This exercise is in your favorites.</p>
+        <button @click="removeFromFavorites">Remove from Favorites</button>
+      </div>
+      <div v-else>
+        <p>This exercise is not in your favorites.</p>
+        <button @click="addToFavorites">Add to Favorites</button>
+      </div>
+      <p>{{ favorites_message }}</p>
+    </fieldset>
     </div> 
   </main>
 </template>
