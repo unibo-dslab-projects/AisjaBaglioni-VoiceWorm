@@ -75,7 +75,15 @@ app.post("/login", async (c) => {
 });
 
 // User routes
-
+app.get("/user/:id", auth, async (c) => {
+  const user_id = c.req.param("id");
+  const db = c.env.DB;
+  const result = await db.prepare("SELECT id, username, email FROM user WHERE id = ?").bind(user_id).run();
+  if (!result.success || result.results.length !== 1) {
+    return c.text("User not found", 404);
+  }
+  return c.json(result.results[0]);
+});
 
 // Exercise routes
 app.post("/exercises", auth, async (c) => {
@@ -122,6 +130,7 @@ app.get("/exercises", auth, async (c) => {
       exercise.s_note,
       exercise.h_note,
       exercise.l_note,
+      exercise.userID as user_id,
       user.username AS username,
       (
         SELECT json_group_array(
@@ -138,6 +147,7 @@ app.get("/exercises", auth, async (c) => {
     FROM exercise
     LEFT JOIN user ON exercise.userID = user.id
     WHERE (exercise.is_public = 1 OR exercise.userID = ?)
+    ORDER BY exercise.id DESC
   `).bind(user.id).run();
 
   if (!result.success) {
@@ -193,6 +203,63 @@ app.get("/exercise/:id", auth, async (c) => {
   exercise.tags = exercise.tags ? JSON.parse(exercise.tags) : [];
   return c.json(exercise);
 });
+
+app.get("/exercises/:userid", auth, async (c) => {
+  const loggedUser = c.get("user");
+  const requestedUserId = c.req.param("userid");
+  const db = c.env.DB;
+
+  const result = await db.prepare(`
+    SELECT 
+      exercise.id,
+      exercise.userID AS user_id,
+      exercise.name,
+      exercise.abc,
+      exercise.is_public,
+      exercise.bpm,
+      exercise.a_steps,
+      exercise.d_steps,
+      exercise.s_note,
+      exercise.h_note,
+      exercise.l_note,
+      user.username AS username,
+      (
+        SELECT json_group_array(
+          json_object(
+            'id', tag.id,
+            'label', tag.label,
+            'category', tag.category
+          )
+        )
+        FROM exercise_tag
+        LEFT JOIN tag ON exercise_tag.tagID = tag.id
+        WHERE exercise_tag.exerciseID = exercise.id
+      ) AS tags
+    FROM exercise
+    LEFT JOIN user ON exercise.userID = user.id
+    WHERE exercise.userID = ?
+      AND (
+        exercise.is_public = 1
+        OR exercise.userID = ?
+      )
+    ORDER BY exercise.id DESC
+  `).bind(
+    requestedUserId,
+    loggedUser.id
+  ).run();
+
+  if (!result.success) {
+    return c.text("Database error", 500);
+  }
+
+  const exercises = result.results.map(e => ({
+    ...e,
+    tags: e.tags ? JSON.parse(e.tags) : []
+  }));
+
+  return c.json(exercises);
+});
+
 
 
 app.put("/exercise/:id", auth, async (c) => {

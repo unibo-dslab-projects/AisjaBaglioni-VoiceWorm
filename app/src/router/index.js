@@ -8,6 +8,7 @@ import CreateView from '@/views/CreateView.vue'
 import TutorialView from '@/views/TutorialView.vue'
 import SearchView from '@/views/SearchView.vue'
 import AddStuffView from '@/views/AddStuffView.vue'
+import UserView from '@/views/UserView.vue'
 
 const router = createRouter({
   history: import.meta.env.PROD ? createWebHistory() : createWebHashHistory(),
@@ -53,6 +54,14 @@ const router = createRouter({
       path: '/exercise/:id',
       name: 'exercise',
       component: ExercisesView,
+      meta: {
+        noAuth: false,
+      }
+    },
+    {
+      path: '/user/:id',
+      name: 'user',
+      component: UserView,
       meta: {
         noAuth: false,
       }

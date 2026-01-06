@@ -1,12 +1,15 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
 import { useCredentials } from '@/stores/credentials';
 import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 
+const route = useRoute();
 const credentials = useCredentials();
 const router = useRouter();
-const MAX_TAGS = 3;
+const isOwner = ref(false);
+
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
@@ -14,34 +17,36 @@ const client = axios.create({
     }
 });
 
-function logout() {
-    credentials.logout();
-    router.push('/login');
-}
+const user_id = ref(route.params.id);
+const user_info = ref(null);
+const message = ref('');
 
-function create() {
-    router.push('/create');
-}
-
-function addStuff() {
-    router.push('/add-stuff');
-}
+const MAX_TAGS = 3;
 
 const exercises = ref([]);
 
 async function fetchExercises() {
   try {
-    const response = await client.get('/exercises');
+    const response = await client.get(`/exercises/${user_id.value}`);
     exercises.value = response.data;
   } catch (error) {
     console.error('Error fetching exercises:', error);
   }
 }
 
+async function loadUser() {
+    try {
+        const response = await client.get(`/user/${user_id.value}`);
+        user_info.value = response.data;
+    } catch (error) {
+        message.value = error.response.data ?? 'Load user failed';
+    }
+}
 onMounted(async () => {
-  await fetchExercises();
+  await loadUser();
+  fetchExercises();
+  isOwner.value = credentials.data.id == user_id.value;
 });
-
 
 //const reversedExercises = computed(() => [...exercises.value].reverse());
 
@@ -49,21 +54,13 @@ onMounted(async () => {
 </script>
 
 <template>
-    <main id="page">
-    <h1>Search Page</h1>
-    <fieldset>
-      <legend>Menu</legend>
-      <button @click="create">Create</button>
-      <button @click="addStuff">Add Stuff</button>
-      <button @click="logout">Logout</button>
-    </fieldset>
-
-
-    <table>
+<main id="page">
+<h1>{{ user_info?.username }}</h1>
+<table>
       <thead>
         <tr>
           <th>Exercise</th>
-          <th>Author</th>
+          <th v-if="isOwner">Visibility</th>
           <th>Tags</th>
         </tr>
       </thead>
@@ -75,11 +72,8 @@ onMounted(async () => {
             {{ exercise.name }}
           </router-link>
           </td>
-          <td><router-link
-            :to="`/user/${exercise.user_id}`"
-            class="user-link">
-            {{ exercise.username }}
-          </router-link></td>
+          <td v-if="isOwner && exercise.is_public">🌍 Public</td>
+          <td v-else-if="isOwner">🔒 Private</td>
           <td class="tags-cell">
             <span
               v-for="tag in exercise.tags.slice(0, MAX_TAGS)"
@@ -111,7 +105,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-
 #page {
   display: flex;
   flex-direction: column;
@@ -165,5 +158,4 @@ onMounted(async () => {
 .tag.more:hover .tooltip {
   opacity: 1;
 }
-
 </style>

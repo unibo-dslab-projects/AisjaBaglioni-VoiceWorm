@@ -13,7 +13,6 @@ import axios from 'axios';
 const isOwner = ref(false);
 const route = useRoute();
 const credentials = useCredentials();
-
 const router = useRouter();
 
 const client = axios.create({
@@ -141,7 +140,7 @@ onMounted(async () => {
     selectedTags.value = Object.fromEntries(
         exercise_info.value.tags.map(tag => [tag.id, true])
     );
-    isOwner.value = credentials.data.id === exercise_info.value.user_id;
+    isOwner.value = credentials.data.id == exercise_info.value.user_id;
     renderScore();
 });
 
