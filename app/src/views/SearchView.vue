@@ -7,15 +7,13 @@ import axios from 'axios';
 const credentials = useCredentials();
 const router = useRouter();
 const MAX_TAGS = 3;
+
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
         'Authorization': `Bearer ${credentials.token}`
     }
 });
-
-const searchQuery = ref('');
-
 
 function logout() {
     credentials.logout();
@@ -35,10 +33,16 @@ function favorites() {
 }
 
 const exercises = ref([]);
+const LIMIT = 10;
+const page = ref(0);
+const searchQuery = ref('');
 
 async function fetchExercises() {
   try {
-    const response = await client.get('/exercises');
+    const response = await client.get('/exercises', { params: { 
+      limit: LIMIT,
+      offset: page.value * LIMIT
+    } });
     exercises.value = response.data;
   } catch (error) {
     console.error('Error fetching exercises:', error);
@@ -46,6 +50,7 @@ async function fetchExercises() {
 }
 
 async function searchExercises() {
+  page.value = 0;
   if (searchQuery.value === '') {
     await fetchExercises();
     return;
@@ -53,7 +58,7 @@ async function searchExercises() {
 
   try {
     const response = await client.get('/search/exercises', {
-      params: { q: searchQuery.value }
+      params: { q: searchQuery.value, limit: LIMIT, offset: page.value * LIMIT }
     });
     exercises.value = response.data;
   } catch (error) {
@@ -64,9 +69,6 @@ async function searchExercises() {
 onMounted(async () => {
   await fetchExercises();
 });
-
-
-//const reversedExercises = computed(() => [...exercises.value].reverse());
 
 
 </script>
@@ -137,10 +139,14 @@ onMounted(async () => {
 
             <span v-if="exercise.tags.length === 0">—</span>
           </td>
-
         </tr>
       </tbody>
     </table>
+    <div class="pagination">
+      <button @click="page = Math.max(page - 1, 0); fetchExercises()" :disabled="page === 0">Previous</button>
+      <span>Page {{ page + 1 }}</span>
+      <button @click="page = page + 1; fetchExercises()" :disabled="exercises.length < LIMIT">Next</button>
+    </div>
     </main>
 </template>
 

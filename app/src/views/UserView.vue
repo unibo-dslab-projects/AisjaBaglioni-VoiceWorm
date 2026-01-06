@@ -48,8 +48,6 @@ onMounted(async () => {
   isOwner.value = credentials.data.id == user_id.value;
 });
 
-//const reversedExercises = computed(() => [...exercises.value].reverse());
-
 
 </script>
 
