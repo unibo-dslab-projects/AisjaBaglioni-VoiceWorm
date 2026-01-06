@@ -14,6 +14,9 @@ const client = axios.create({
     }
 });
 
+const searchQuery = ref('');
+
+
 function logout() {
     credentials.logout();
     router.push('/login');
@@ -42,6 +45,22 @@ async function fetchExercises() {
   }
 }
 
+async function searchExercises() {
+  if (searchQuery.value === '') {
+    await fetchExercises();
+    return;
+  }
+
+  try {
+    const response = await client.get('/search/exercises', {
+      params: { q: searchQuery.value }
+    });
+    exercises.value = response.data;
+  } catch (error) {
+    console.error('Error searching exercises:', error);
+  }
+}
+
 onMounted(async () => {
   await fetchExercises();
 });
@@ -59,9 +78,19 @@ onMounted(async () => {
       <legend>Menu</legend>
       <button @click="create">Create</button>
       <button @click="addStuff">Add Stuff</button>
-      <button @click="logout">Logout</button>
       <button @click="favorites">Favorites</button>
+      <button @click="logout">Logout</button>
     </fieldset>
+
+
+<div class="search-container">
+  <input
+    type="text"
+    v-model="searchQuery"
+    placeholder="Search exercises..."
+  />
+  <button type="button" @click="searchExercises">Search</button>
+</div>
 
 
     <table>
@@ -170,5 +199,7 @@ onMounted(async () => {
 .tag.more:hover .tooltip {
   opacity: 1;
 }
+
+
 
 </style>

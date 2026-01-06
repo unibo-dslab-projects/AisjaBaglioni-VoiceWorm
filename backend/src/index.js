@@ -98,6 +98,7 @@ app.post("/exercises", auth, async (c) => {
   const s_note = args["s_note"];
   const h_note = args["h_note"];
   const l_note = args["l_note"];
+
   const db = c.env.DB;
   const tagIDs = args["tag_ids"] || [];
   const result = await db.prepare("INSERT INTO exercise(name, abc, userID, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id").bind(name, abc, user.id, is_public, bpm, a_steps, d_steps, s_note, h_note, l_note).run();
@@ -114,9 +115,35 @@ app.post("/exercises", auth, async (c) => {
   return c.json({ id: result.results[0].id });
 });
 
-app.get("/exercises", auth, async (c) => {
+app.get("/search/exercises", auth, async (c) => {
   const user = c.get("user");
   const db = c.env.DB;
+  const query = c.req.query("q");
+  const limit = parseInt(c.req.query("limit")) || 10000;
+  const offset = parseInt(c.req.query("offset")) || 0;
+
+  const result = await db.prepare(`
+  SELECT *, user.username as username, (SELECT json_group_array(json_object('id', tag.id, 'label', tag.label, 'category', tag.category)) FROM exercise_tag LEFT JOIN tag ON exercise_tag.tagID = tag.id WHERE exercise_tag.exerciseID = exercise.id) AS tags FROM exercise LEFT JOIN user ON exercise.userID = user.id WHERE (exercise.is_public OR exercise.userID = ?) AND (exercise.name LIKE ? OR user.username LIKE ? OR (SELECT COUNT(*) FROM exercise_tag LEFT JOIN tag ON exercise_tag.tagID = tag.id WHERE exercise_tag.exerciseID = exercise.id AND tag.label LIKE ?) > 0) ORDER BY exercise.id DESC LIMIT ? OFFSET ?;
+  `).bind(user.id, `%${query}%`, `%${query}%`, `%${query}%`, limit, offset).run();
+
+  if (!result.success) {
+    return c.text("Cannot retrieve exercises", 500);
+  }
+
+  const exercises = result.results.map(e => ({
+    ...e,
+    tags: e.tags ? JSON.parse(e.tags) : []
+  }));
+
+  return c.json(exercises);
+});
+
+
+  app.get("/exercises", auth, async (c) => {
+  const user = c.get("user");
+  const db = c.env.DB;
+  const limit = parseInt(c.req.query("limit")) || 10000;
+  const offset = parseInt(c.req.query("offset")) || 0;
 
   const result = await db.prepare(`
     SELECT 
@@ -148,7 +175,9 @@ app.get("/exercises", auth, async (c) => {
     LEFT JOIN user ON exercise.userID = user.id
     WHERE (exercise.is_public = 1 OR exercise.userID = ?)
     ORDER BY exercise.id DESC
-  `).bind(user.id).run();
+    LIMIT ?
+    OFFSET ?
+  `).bind(user.id, limit, offset).run();
 
   if (!result.success) {
     return c.text("Cannot retrieve exercises", 500);
