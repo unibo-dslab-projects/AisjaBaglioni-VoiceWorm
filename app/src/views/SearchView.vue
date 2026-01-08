@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useCredentials } from '@/stores/credentials';
+import { useTheme } from '@/stores/theme';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
-
 const credentials = useCredentials();
+const theme = useTheme();
 const router = useRouter();
 const MAX_TAGS = 3;
 
@@ -14,6 +15,10 @@ const client = axios.create({
     headers: {
         'Authorization': `Bearer ${credentials.token}`
     }
+});
+
+const buttonClass = computed(() => {
+  return theme.darkMode ? 'button is-dark' : 'button is-light';
 });
 
 function logout() {
@@ -86,10 +91,12 @@ async function searchExercises() {
   }
 }
 
+document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
+
+
 onMounted(async () => {
   await fetchExercises();
 });
-
 
 </script>
 
@@ -97,16 +104,17 @@ onMounted(async () => {
       <header>
       <div>
         <router-link to="/" class="logo-link">
-          <img src="/public/logo_white.svg" alt="App Logo" class="app-logo" />
+        <img :src="theme.darkMode ? '/public/logo_dark.svg' : '/public/logo_white.svg'" alt="App Logo" class="app-logo" />
+
         </router-link>
       </div>
       <div class="buttons is-spaced">
-      <button class="button is-link is-light" @click="create">Create</button>
-      <button class="button is-info is-light" @click="tutorial">Tutorial</button>
-      <button class="button is-success is-light" @click="favorites">Favorites</button>
+      <button :class="buttonClass" class="button is-link" @click="create">Create</button>
+      <button :class="buttonClass"  class="button is-info is-light" @click="tutorial">Tutorial</button>
+      <button :class="buttonClass"  class="button is-success is-light" @click="favorites">Favorites</button>
       <div class="dropdown" :class="{ 'is-active': userDropdownOpen }">
           <div class="dropdown-trigger">
-            <button
+            <button :class="buttonClass" 
               class="button is-warning is-light"
               @click="toggleUserDropdown"
               aria-haspopup="true"
@@ -126,10 +134,13 @@ onMounted(async () => {
             </div>
           </div>
     </div>
-
+            <button class="button dark-toggle" @click="theme.toggleDarkMode">
+              <i :class="theme.darkMode ? 'fas fa-moon' : 'fas fa-sun'"></i>
+            </button>
       </div>
     </header>
     <main id="page">
+    <body>
     <h1>Search Page</h1>
 <div class="search-container">
   <input
@@ -193,27 +204,16 @@ onMounted(async () => {
       <span>Page {{ page + 1 }}</span>
       <button @click="page = page + 1; fetchExercises()" :disabled="exercises.length < LIMIT">Next</button>
     </div>
+    </body>
     </main>
 
-    <footer class="app-footer">
-      <p>♡ Coded with love by Aisja, 2026 ♡</p>
+    <footer>
+      <p>♡ Coded with love by <a class="aisja-link" href="https://aisja.it">Aisja</a>, 2026 ♡</p>
     </footer>
 
 </template>
 
 <style scoped>
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;       
-  padding: 16px 24px;
-  background: linear-gradient(90deg, #ffffff, #e6f0ff);
-  border-bottom: 1px solid #e5e5e5;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
 
 .app-logo {
   height: 80px;
@@ -221,11 +221,19 @@ header {
   padding-left: 50px;
 }
 
-
 .buttons {
   display: flex;
   gap: 12px;
   padding-right: 50px;
+}
+
+.dark-toggle {
+  background: none;
+  border: none;
+  box-shadow: none; 
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #4a4a4a;
 }
 
 .logo img {
@@ -297,17 +305,11 @@ header {
 .tag.more:hover .tooltip {
   opacity: 1;
 }
-.app-footer {
-  width: 100%;
-  text-align: center;
-  padding: 16px 0;
-  background: linear-gradient(90deg, #e6f0ff, #ffffff); /* simile all'header */
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08); /* leggero drop shadow sopra */
-  font-size: 0.9rem;
-  color: #2b2d42; /* colore testo leggibile */
-}
 
-
+.aisja-link {
+  color: #ff76df;
+  text-decoration: none;
+} 
 
 
 </style>
