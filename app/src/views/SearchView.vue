@@ -16,17 +16,18 @@ const client = axios.create({
         'Authorization': `Bearer ${credentials.token}`
     }
 });
+document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
 
 const exercises = ref([]);
-const LIMIT = 10;
+const limit = ref(10);
 const page = ref(0);
 const searchQuery = ref('');
 
 async function fetchExercises() {
   try {
     const response = await client.get('/exercises', { params: { 
-      limit: LIMIT,
-      offset: page.value * LIMIT
+      limit: limit.value,
+      offset: page.value * limit.value
     } });
     exercises.value = response.data;
   } catch (error) {
@@ -34,8 +35,12 @@ async function fetchExercises() {
   }
 }
 
-async function searchExercises() {
+async function resetAndSearch(){
   page.value = 0;
+  await searchExercises();
+}
+
+async function searchExercises() {
   if (searchQuery.value === '') {
     await fetchExercises();
     return;
@@ -43,7 +48,7 @@ async function searchExercises() {
 
   try {
     const response = await client.get('/search/exercises', {
-      params: { q: searchQuery.value, limit: LIMIT, offset: page.value * LIMIT }
+      params: { q: searchQuery.value, limit: limit.value, offset: page.value * limit.value }
     });
     exercises.value = response.data;
   } catch (error) {
@@ -51,12 +56,36 @@ async function searchExercises() {
   }
 }
 
-document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
+async function prevPage() {
+  if (page.value === 0) return;
+  page.value--;
+  await loadExercises();
+}
+
+async function nextPage() {
+  page.value++;
+  await loadExercises();
+}
+
+async function loadExercises() {
+  if (searchQuery.value.trim() === '') {
+    await fetchExercises();
+  } else {
+    await searchExercises();
+  }
+}
 
 function reset() {
   searchQuery.value = '';
   fetchExercises();
 }
+
+function changeLimit(event) {
+  limit.value = Number(event.target.value);
+  page.value = 0;
+  fetchExercises();
+}
+
 
 onMounted(async () => {
   await fetchExercises();
@@ -73,7 +102,7 @@ onMounted(async () => {
       <div class="title-underline"></div>
     </div>
 
-<form @submit.prevent="searchExercises" class="search-container">
+<form @submit.prevent="resetAndSearch" class="search-container">
   <div class="help-tooltip">
     <i class="fas fa-question-circle"></i>
     <div class="tooltip-dropdown">
@@ -88,6 +117,13 @@ onMounted(async () => {
   />
   <button type="submit">Search</button>
   <button @click="reset" >Reset</button>
+
+      <label for="limit-select">Results:</label>
+       <select id="limit-select" @change="changeLimit" :value="limit">
+        <option :value="10">10</option>
+        <option :value="50">50</option>
+        <option :value="100">100</option>
+      </select>
 </form>
 
 
@@ -142,9 +178,9 @@ onMounted(async () => {
     </div>
 
     <div class="pagination">
-      <button @click="page = Math.max(page - 1, 0); fetchExercises()" :disabled="page === 0">Previous</button>
+      <button @click="prevPage" :disabled="page === 0">Previous</button>
       <span>Page {{ page + 1 }}</span>
-      <button @click="page = page + 1; fetchExercises()" :disabled="exercises.length < LIMIT">Next</button>
+      <button @click="nextPage" :disabled="exercises.length < limit">Next</button>
     </div>
     </body>
     </main>
@@ -192,7 +228,7 @@ td {
   word-break: break-word;   
   overflow-wrap: anywhere; 
   border: 1px solid #ccc;
-  padding: 14px 18px;
+  padding: 12px 16px;
 }
 
 tbody tr:nth-child(odd) {
@@ -221,6 +257,7 @@ tbody tr:nth-child(even) {
 
 .tooltip {
   min-width: 100px;
+  max-width: 260px;
   position: absolute;
   bottom: 120%;
   left: 50%;
@@ -231,7 +268,6 @@ tbody tr:nth-child(even) {
   border-radius: 6px;
   font-size: 0.75rem;
   white-space: normal;
-  max-width: 260px;
   text-align: center;
   opacity: 0;
   pointer-events: none;
@@ -367,6 +403,23 @@ tbody tr:nth-child(even) {
 .help-tooltip:hover .tooltip-dropdown {
   opacity: 1;
   pointer-events: auto;
+}
+
+.results-per-page {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#limit-select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 </style>
