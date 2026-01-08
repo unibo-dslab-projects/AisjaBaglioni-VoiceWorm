@@ -95,7 +95,6 @@ onMounted(async () => {
 <template>
     <Header/>
     <main id="page">
-    <body>
 
     <div class="page-title">
       <h1>Search</h1>
@@ -182,7 +181,6 @@ onMounted(async () => {
       <span>Page {{ page + 1 }}</span>
       <button @click="nextPage" :disabled="exercises.length < limit">Next</button>
     </div>
-    </body>
     </main>
 
     <Footer/>
@@ -305,7 +303,6 @@ tbody tr:nth-child(even) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
 }
 
 .page-title h1 {

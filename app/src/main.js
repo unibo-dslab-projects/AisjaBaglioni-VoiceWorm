@@ -1,4 +1,7 @@
 import 'abcjs/abcjs-audio.css';
+import 'bulma/css/bulma.css'
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@/assets/style.scss';
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'

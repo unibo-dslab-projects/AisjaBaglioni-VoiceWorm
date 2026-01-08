@@ -49,7 +49,7 @@ document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
     <header :class="{ dark: theme.darkMode }">
       <div>
         <router-link to="/" class="logo-link">
-        <img :src="theme.darkMode ? '/public/logo_dark.svg' : '/public/logo_white.svg'" alt="App Logo" class="app-logo" />
+        <img :src="theme.darkMode ? '/logo_dark.svg' : '/logo_white.svg'" alt="App Logo" class="app-logo" />
         </router-link>
       </div>
       <div class="buttons is-spaced">
