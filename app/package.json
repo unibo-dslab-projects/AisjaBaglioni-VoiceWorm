@@ -13,6 +13,7 @@
     "@vueuse/core": "^14.1.0",
     "abc-notation-transposition": "^1.0.5",
     "abcjs": "^6.5.1",
+    "axios": "^1.13.2",
     "bulma": "^1.0.4",
     "jspdf": "^4.0.0",
     "lodash": "^4.17.21",
@@ -25,6 +26,6 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "sass-embedded": "^1.97.2",
     "vite": "^6.2.1",
-    "vite-plugin-vue-devtools": "^7.7.2"
+    "vite-plugin-vue-devtools": "^7.7.9"
   }
 }
