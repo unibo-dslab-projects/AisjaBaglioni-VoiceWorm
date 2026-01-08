@@ -56,15 +56,20 @@ document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
 
 onMounted(async () => {
   await fetchExercises();
+  //console.log(exercises.value[5].tags[0].category)
 });
-
 </script>
 
 <template>
     <Header/>
     <main id="page">
     <body>
-    <h1>Search Page</h1>
+
+    <div class="page-title">
+      <h1>Search</h1>
+      <div class="title-underline"></div>
+    </div>
+
 <div class="search-container">
   <input
     type="text"
@@ -72,7 +77,17 @@ onMounted(async () => {
     placeholder="Search exercises..."
   />
   <button type="button" @click="searchExercises">Search</button>
+
+  <div class="help-tooltip">
+    <i class="fas fa-question-circle"></i>
+    <div class="tooltip-dropdown">
+      You can search exercises by name, author or tags
+    </div>
+  </div>
 </div>
+
+
+
 
 
     <table>
@@ -100,7 +115,7 @@ onMounted(async () => {
             <span
               v-for="tag in exercise.tags.slice(0, MAX_TAGS)"
               :key="tag.id"
-              class="tag"
+              :class="['tag', tag.category]"
             >
               {{ tag.label }}
             </span>
@@ -146,25 +161,7 @@ onMounted(async () => {
   box-sizing: border-box;
 }
 
-.tags-cell {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  max-width: 320px;
-}
 
-.tag {
-  background: #eef1f5;
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 0.8rem;
-  position: relative;
-}
-
-.tag.more {
-  background: #ddd;
-  cursor: default;
-}
 
 .tooltip {
   min-width: 100px;
@@ -189,6 +186,127 @@ onMounted(async () => {
 .tag.more:hover .tooltip {
   opacity: 1;
 }
+
+.tag {
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: white;
+  position: relative;
+  transition: transform 0.1s, filter 0.1s;
+}
+
+.tag:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.9);
+}
+
+.tag.more {
+  background-color: #7e7e7e;
+  cursor: default;
+}
+
+.page-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-title h1 {
+  padding-top: 20px;
+  font-size: 2.5rem; 
+  font-weight: 300;
+  margin: 0;
+}
+
+.title-underline {
+  width: 250px;
+  height: 2px;  
+  background-color: var(--text-color); 
+  border-radius: 2px;
+  margin-top: 8px; 
+  margin-bottom: 20px;
+}
+
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.search-container input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: var(--bg-color);
+}
+
+.search-container input:focus {
+  outline: none;
+  border-color: #6c63ff;
+  box-shadow: 0 0 6px rgba(108, 99, 255, 0.3);
+}
+
+.search-container button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background-color: #6c63ff;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.help-tooltip {
+  margin-left: 8px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #6c63ff;
+}
+
+.tooltip-dropdown {
+  width: 300px;
+  position: absolute;
+  top: 35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #7e7e7e;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: normal;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.help-tooltip:hover .tooltip-dropdown {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
 
 
 </style>

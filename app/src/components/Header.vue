@@ -22,6 +22,26 @@ function logout() {
   router.push('/login');
 }
 
+function create(){
+  router.push('/create')
+}
+
+function tutorial(){
+  router.push('/tutorial')
+}
+
+function favorites(){
+  router.push('/favorites')
+}
+
+function search(){
+  router.push('/')
+}
+
+function profile(){
+  router.push('/user/'+ credentials.data.id)
+}
+
 document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
 </script>
 
@@ -30,11 +50,11 @@ document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
       <div>
         <router-link to="/" class="logo-link">
         <img :src="theme.darkMode ? '/public/logo_dark.svg' : '/public/logo_white.svg'" alt="App Logo" class="app-logo" />
-
         </router-link>
       </div>
       <div class="buttons is-spaced">
       <button :class="buttonClass" class="button is-link" @click="create">Create</button>
+      <button :class="buttonClass" class="button is-danger" @click="search">Search</button>
       <button :class="buttonClass"  class="button is-info is-light" @click="tutorial">Tutorial</button>
       <button :class="buttonClass"  class="button is-success is-light" @click="favorites">Favorites</button>
       <div class="dropdown" :class="{ 'is-active': userDropdownOpen }">
@@ -53,7 +73,7 @@ document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
           </div>
           <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-              <a class="dropdown-item" @click="user">Your Profile</a>
+              <a class="dropdown-item" @click="profile">Your Profile</a>
               <hr class="dropdown-divider" />
               <a class="dropdown-item logout-item" @click="logout">Logout</a>
             </div>

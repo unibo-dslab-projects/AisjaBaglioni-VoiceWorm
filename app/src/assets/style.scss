@@ -1,5 +1,6 @@
 @use "bulma/sass" as *;
 
+// Background, header and footer
 body[data-theme="light"] {
   --bg-color: #ffffff;
   --text-color: #2b2d42;
@@ -46,3 +47,22 @@ footer {
   color: var(--text-color);
 }
 
+//Tags 
+body[data-theme="light"] {
+  --tag-Interval: #7bdc9a; 
+  --tag-Protocol: #7fbfff; 
+  --tag-Scale: #ffbf60;  
+  --tag-Objective: #ff7fe3; 
+}
+
+body[data-theme="dark"] {
+  --tag-Interval: #4ad777; 
+  --tag-Protocol: #479ef5; 
+  --tag-Scale: #f7aa36;  
+  --tag-Objective: #f14cce; 
+}
+
+.tag.Interval { background-color: var(--tag-Interval); }
+.tag.Protocol { background-color: var(--tag-Protocol); }
+.tag.Scale { background-color: var(--tag-Scale); }
+.tag.Objective { background-color: var(--tag-Objective); }
