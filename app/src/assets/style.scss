@@ -4,15 +4,29 @@
 body[data-theme="light"] {
   --bg-color: #ffffff;
   --text-color: #2b2d42;
+  --text-inverse: #f0f0f0;
+  --shadow-color: #c1c1c1;
   --header-bg: linear-gradient(90deg, #ffffff, #e6f0ff);
   --footer-bg: linear-gradient(90deg, #e6f0ff, #ffffff);
+  --pagination-bg: #ffffff;
+  --disabled-bg: #646464;
+  --table-color: rgb(107, 119, 255);
+  --table-row-odd: #ffffff;
+  --table-row-even: #edeeff;
 }
 
 body[data-theme="dark"] {
   --bg-color: #1e1e2f;
   --text-color: #f0f0f0;
+  --text-inverse: #2b2d42;
+  --shadow-color: #434343;
   --header-bg: linear-gradient(90deg, #2b2d42, #3a3f55, #4b4a7a);
   --footer-bg: linear-gradient(90deg, #4b4a7a, #3a3f55, #2b2d42);
+  --pagination-bg: #1e1e2f;
+  --disabled-bg: #a8a8a8;
+  --table-color: #a1a8ff;
+  --table-row-odd: #1e1e2f;
+  --table-row-even: #2f2f4a;
 }
 
 body[data-theme="dark"] button.dark-toggle {
@@ -56,13 +70,52 @@ body[data-theme="light"] {
 }
 
 body[data-theme="dark"] {
-  --tag-Interval: #4ad777; 
-  --tag-Protocol: #479ef5; 
-  --tag-Scale: #f7aa36;  
-  --tag-Objective: #f14cce; 
+  --tag-Interval: #36b65e; 
+  --tag-Protocol: #3a83cc; 
+  --tag-Scale: #d4922f;  
+  --tag-Objective: #d164b9; 
 }
 
 .tag.Interval { background-color: var(--tag-Interval); }
 .tag.Protocol { background-color: var(--tag-Protocol); }
 .tag.Scale { background-color: var(--tag-Scale); }
 .tag.Objective { background-color: var(--tag-Objective); }
+
+// Table and pagination
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #6c63ff;
+  background-color: var(--pagination-bg);
+  color: #6c63ff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #6c63ff;
+  color: white;
+}
+
+.pagination button:disabled {
+  color: var(--disabled-bg);
+  border-color: var(--disabled-bg);
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+

@@ -53,10 +53,13 @@ async function searchExercises() {
 
 document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
 
+function reset() {
+  searchQuery.value = '';
+  fetchExercises();
+}
 
 onMounted(async () => {
   await fetchExercises();
-  //console.log(exercises.value[5].tags[0].category)
 });
 </script>
 
@@ -70,26 +73,25 @@ onMounted(async () => {
       <div class="title-underline"></div>
     </div>
 
-<div class="search-container">
-  <input
-    type="text"
-    v-model="searchQuery"
-    placeholder="Search exercises..."
-  />
-  <button type="button" @click="searchExercises">Search</button>
-
+<form @submit.prevent="searchExercises" class="search-container">
   <div class="help-tooltip">
     <i class="fas fa-question-circle"></i>
     <div class="tooltip-dropdown">
       You can search exercises by name, author or tags
     </div>
   </div>
-</div>
+
+  <input
+    type="text"
+    v-model="searchQuery"
+    placeholder="Search exercises..."
+  />
+  <button type="submit">Search</button>
+  <button @click="reset" >Reset</button>
+</form>
 
 
-
-
-
+<div class="table-wrapper">
     <table>
       <thead>
         <tr>
@@ -137,6 +139,8 @@ onMounted(async () => {
         </tr>
       </tbody>
     </table>
+    </div>
+
     <div class="pagination">
       <button @click="page = Math.max(page - 1, 0); fetchExercises()" :disabled="page === 0">Previous</button>
       <span>Page {{ page + 1 }}</span>
@@ -162,6 +166,58 @@ onMounted(async () => {
 }
 
 
+.table-wrapper {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+
+table {
+  width: 80%;
+  table-layout: fixed;
+  margin: 0 auto;
+  border: 2px solid #ccc;
+  border-collapse: collapse;
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+th {
+  background-color: var(--table-color);
+  color: var(--text-inverse);
+}
+
+th,
+td {
+  white-space: normal;      
+  word-break: break-word;   
+  overflow-wrap: anywhere; 
+  border: 1px solid #ccc;
+  padding: 14px 18px;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: var(--table-row-odd);
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--table-row-even);
+}
+
+.tags-cell {
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.exercise-link, .user-link {
+  color: var(--table-color);
+  display: block; 
+}
+
+.exercise-link:hover, .user-link:hover{
+  color: #ff76df;
+}
 
 .tooltip {
   min-width: 100px;
@@ -195,15 +251,17 @@ onMounted(async () => {
   color: white;
   position: relative;
   transition: transform 0.1s, filter 0.1s;
+  margin-right: 5px;
 }
 
 .tag:hover {
   transform: translateY(-1px);
   filter: brightness(0.9);
+  user-select: none;
 }
 
 .tag.more {
-  background-color: #7e7e7e;
+  background-color: #999999;
   cursor: default;
 }
 
@@ -248,6 +306,7 @@ onMounted(async () => {
   font-size: 1rem;
   transition: all 0.2s ease;
   background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .search-container input:focus {
@@ -280,7 +339,11 @@ onMounted(async () => {
   align-items: center;
   cursor: pointer;
   font-size: 1.2rem;
-  color: #6c63ff;
+}
+
+.help-tooltip i {
+  color: var(--text-color);
+  font-size: 1.2rem;
 }
 
 .tooltip-dropdown {
@@ -305,8 +368,5 @@ onMounted(async () => {
   opacity: 1;
   pointer-events: auto;
 }
-
-
-
 
 </style>
