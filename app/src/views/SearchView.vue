@@ -4,6 +4,7 @@ import { useCredentials } from '@/stores/credentials';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
+
 const credentials = useCredentials();
 const router = useRouter();
 const MAX_TAGS = 3;
@@ -26,6 +27,25 @@ function create() {
 
 function addStuff() {
     router.push('/add-stuff');
+}
+
+function tutorial() {
+    router.push('/tutorial');
+}
+
+function user() {
+    router.push('/user/' + credentials.data.id);
+}
+
+const userDropdownOpen = ref(false)
+
+function toggleUserDropdown() {
+  userDropdownOpen.value = !userDropdownOpen.value
+}
+
+function goProfile() {
+  userDropdownOpen.value = false
+  router.push('/user')
 }
 
 function favorites() {
@@ -74,17 +94,43 @@ onMounted(async () => {
 </script>
 
 <template>
+      <header>
+      <div>
+        <router-link to="/" class="logo-link">
+          <img src="/public/logo_white.svg" alt="App Logo" class="app-logo" />
+        </router-link>
+      </div>
+      <div class="buttons is-spaced">
+      <button class="button is-link is-light" @click="create">Create</button>
+      <button class="button is-info is-light" @click="tutorial">Tutorial</button>
+      <button class="button is-success is-light" @click="favorites">Favorites</button>
+      <div class="dropdown" :class="{ 'is-active': userDropdownOpen }">
+          <div class="dropdown-trigger">
+            <button
+              class="button is-warning is-light"
+              @click="toggleUserDropdown"
+              aria-haspopup="true"
+              aria-controls="dropdown-menu"
+            >
+              <span>User</span>
+              <span class="icon is-small">
+                <i class="fas fa-angle-down" aria-hidden="true"></i>
+              </span>
+            </button>
+          </div>
+          <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <div class="dropdown-content">
+              <a class="dropdown-item" @click="user">Your Profile</a>
+              <hr class="dropdown-divider" />
+              <a class="dropdown-item logout-item" @click="logout">Logout</a>
+            </div>
+          </div>
+    </div>
+
+      </div>
+    </header>
     <main id="page">
     <h1>Search Page</h1>
-    <fieldset>
-      <legend>Menu</legend>
-      <button @click="create">Create</button>
-      <button @click="addStuff">Add Stuff</button>
-      <button @click="favorites">Favorites</button>
-      <button @click="logout">Logout</button>
-    </fieldset>
-
-
 <div class="search-container">
   <input
     type="text"
@@ -148,9 +194,55 @@ onMounted(async () => {
       <button @click="page = page + 1; fetchExercises()" :disabled="exercises.length < LIMIT">Next</button>
     </div>
     </main>
+
+    <footer class="app-footer">
+      <p>♡ Coded with love by Aisja, 2026 ♡</p>
+    </footer>
+
 </template>
 
 <style scoped>
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;       
+  padding: 16px 24px;
+  background: linear-gradient(90deg, #ffffff, #e6f0ff);
+  border-bottom: 1px solid #e5e5e5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-logo {
+  height: 80px;
+  width: auto;
+  padding-left: 50px;
+}
+
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  padding-right: 50px;
+}
+
+.logo img {
+  display: block;
+}
+
+.dropdown-menu {
+  min-width: 100px;
+}
+
+.logout-item {
+  color: #ef233c;
+}
+
+.logout-item:hover {
+  background-color: #f8d7da;
+}
 
 #page {
   display: flex;
@@ -205,6 +297,16 @@ onMounted(async () => {
 .tag.more:hover .tooltip {
   opacity: 1;
 }
+.app-footer {
+  width: 100%;
+  text-align: center;
+  padding: 16px 0;
+  background: linear-gradient(90deg, #e6f0ff, #ffffff); /* simile all'header */
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08); /* leggero drop shadow sopra */
+  font-size: 0.9rem;
+  color: #2b2d42; /* colore testo leggibile */
+}
+
 
 
 

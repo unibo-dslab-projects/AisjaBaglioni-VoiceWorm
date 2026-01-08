@@ -792,7 +792,7 @@ function togglePause() {
 
 fieldset {
   padding: 20px;
-  width: 100%;
+  width: 90%;
 }
 
 .text {
