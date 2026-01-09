@@ -24,7 +24,7 @@ const client = axios.create({
 //Nome dell'esercizio
 const exerciseName = ref("Choose a significant name");
 //Testo scritto dall'utente
-const userText = ref("X:1\nK:C\n|cdcdz2z2|\n");
+const userText = ref("X:1\nK:C\n|[ceg]z2cdcd|\n");
 //Testo renderizzato da abc
 const renderedText = ref(null);
 //Synth controller
@@ -36,7 +36,7 @@ const scrollbarLeft = ref(null);
 const scrollbarTop = ref(null);
 const scrollbarHeight = ref(null);
 //BPM e conversioni tra note e pitch
-const bpm = ref(120);
+const bpm = ref(85);
 //Step per la generazione delle trasposizioni
 const ascendingSteps = ref(1);
 const descendingSteps = ref(1);
@@ -158,7 +158,7 @@ async function renderScore() {
 
 // Reset dello spartito
 function resetToDefault() {
-  userText.value = "X:1\nK:C\n|cdcdz2z2|\n";
+  userText.value = "X:1\nK:C\n|[ceg]z2cdcd|\n";
   renderScore();
 }
 

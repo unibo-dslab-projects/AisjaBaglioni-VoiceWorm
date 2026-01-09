@@ -215,6 +215,10 @@ async function modifyExercise() {
 }
 
 async function deleteExercise(){
+  const confirmed = window.confirm("Sei sicuro di voler eliminare definitivamente questo esercizio?");
+  
+  if (!confirmed) return;
+
   try {
         const response = await client.delete(`/exercise/${exercise_id.value}`);
         delete_message.value = response.data.message;
@@ -222,8 +226,8 @@ async function deleteExercise(){
     } catch (error) {
         delete_message.value = error?.response?.data ?? 'Delete exercise failed';
         console.error('Delete exercise error:', error);
-    }
-    message.value = '';
+  }
+  message.value = '';
 }
 
 // Renderizza lo spartito all'avvio o quando richiesto
@@ -255,7 +259,7 @@ async function renderScore() {
 
 // Reset dello spartito
 function resetToDefault() {
-  userText.value = "X:1\nK:C\n|cdcdz2z2|\n";
+  userText.value = "X:1\nK:C\n|[ceg]z2cdcd|\n";
   renderScore();
 }
 
@@ -573,6 +577,7 @@ function togglePause() {
   }
   isPaused.value = !isPaused.value;
 }
+
 
 </script>
 

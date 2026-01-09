@@ -449,7 +449,7 @@ app.get("/tags", auth, async (c) => {
   return c.json(result.results);
 });
 
-app.post("/tags", auth, async (c) => {
+app.post("/tags", async (c) => {
   const args = await c.req.json();
   const category = args["category"];
   const label = args["label"];

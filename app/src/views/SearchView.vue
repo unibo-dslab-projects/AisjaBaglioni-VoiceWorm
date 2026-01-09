@@ -238,7 +238,7 @@ onMounted(async () => {
   position: relative;
   display: inline-flex;
   align-items: center;
-  cursor: pointer;
+  cursor: default;
   font-size: 1.2rem;
 }
 
@@ -279,5 +279,7 @@ onMounted(async () => {
   background-color: var(--bg-color);
   color: var(--text-color);
 }
+
+
 
 </style>

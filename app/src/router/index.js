@@ -44,8 +44,8 @@ const router = createRouter({
       }
     },
     {
-      path: '/add-stuff',
-      name: 'add-stuff',
+      path: '/addstuff',
+      name: 'addstuff',
       component: AddStuffView,
       meta: {
         noAuth: false,
@@ -84,6 +84,17 @@ const router = createRouter({
       }
     },
   ],
+scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      const el = document.querySelector(to.hash)
+      if (el) {
+        const HEADER_OFFSET = 120
+        const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
+        return window.scrollTo({ top, behavior: 'smooth' })
+      }
+    }
+    return { top: 0 }
+  }
 })
 
 router.beforeEach(async (to, from, next) => {
