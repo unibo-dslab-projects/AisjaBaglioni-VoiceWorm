@@ -352,7 +352,7 @@ app.delete("/exercise/:exerciseid", auth, async (c) => {
   const user = c.get("user");
   const exercise_id = c.req.param("exerciseid");
   const db = c.env.DB;
-  const result = await db.prepare("DELETE FROM exercise WHERE userID = ? AND exerciseID = ?").bind(user.id, exercise_id).run();
+  const result = await db.prepare("DELETE FROM exercise WHERE userID = ? AND id = ?").bind(user.id, exercise_id).run();
   if (!result.success) {
     return c.text("Cannot remove exercise", 400);
   }
