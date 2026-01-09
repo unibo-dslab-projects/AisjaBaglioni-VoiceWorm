@@ -879,18 +879,18 @@ function togglePause() {
 }
 
 #danger-text {
-  color: #681f17;
+  color: var(--danger-text);
 }
 
 .danger-buttons {
   display: flex;
-  gap: 12px;        /* spazio tra i pulsanti */
-  flex-wrap: wrap;   /* per andare a capo se necessario */
+  gap: 12px;       
+  flex-wrap: wrap; 
   margin-top: 10px;
 }
 
 .danger-button {
-  background-color: #e74c3c;  /* rosso intenso */
+  background-color: #e74c3c;
   color: white;
   border: none;
   border-radius: 6px;
@@ -901,7 +901,7 @@ function togglePause() {
 }
 
 .danger-button:hover {
-  background-color: #c0392b;  /* rosso scuro al hover */
+  background-color: #c0392b; 
 }
 
 .modify-message, .delete-message {
