@@ -9,11 +9,33 @@ const router = useRouter();
 
 const email = ref('');
 const password = ref('');
+const confirmPassword = ref('');
 const username = ref('');
 const message = ref('');
 
+
+function isPasswordValid(pwd) {
+  return /^(?=.*[A-Z])(?=.*\d).{8,64}$/.test(pwd);
+}
+
 async function handleRegister() {
+message.value = '';
 let status = false;
+if (username.value.length < 3 || username.value.length > 20) {
+  message.value = 'Username must be between 3 and 20 characters';
+  return;
+}
+
+if (!isPasswordValid(password.value)) {
+    message.value =
+      'Password must be at least 8 characters long and contain at least one uppercase letter and one number';
+    return;
+  }
+
+if (password.value !== confirmPassword.value) {
+  message.value = 'Passwords do not match';
+  return;
+}
 
 try {
   const response = await axios.post(import.meta.env.VITE_API_BASE_URL + '/register', {
@@ -53,15 +75,21 @@ try {
 
       <div>
         <label for="password">Password:</label>
-        <input type="password" id="password" v-model="password" required />
+        <input type="password" id="password" v-model="password" placeholder="At least 8 chars, 1 uppercase, 1 number" required />
+
+      </div>
+
+      <div>
+        <label for="confirmPassword">Repeat password:</label>
+        <input id="confirmPassword" type="password" v-model="confirmPassword" placeholder="Repeat your password" required />
       </div>
 
       <div>
         <label for="username">Username:</label>
-        <input type="text" id="username" v-model="username" required />
+        <input type="text" id="username" v-model="username" placeholder="At least 3 chars" required />
       </div>
 
-      <button type="submit">Registrati</button>
+      <button type="submit">Sign up</button>
     </form>
 
     <div>

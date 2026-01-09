@@ -802,7 +802,7 @@ function togglePause() {
   <div v-if="is_favorite">
     <p>This exercise is in your favorites.</p>
     <div class="action-buttons">
-      <button class="action-button" @click="removeFromFavorites">Remove from Favorites</button>
+      <button class="danger-button" @click="removeFromFavorites">Remove from Favorites</button>
     </div>
   </div>
 

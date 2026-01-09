@@ -67,10 +67,18 @@ const router = createRouter({
         noAuth: false,
       }
     },
-        {
+    {
       path: '/favorites',
       name: 'favorites',
       component: FavoriteView,
+      meta: {
+        noAuth: false,
+      }
+    },
+    {
+      path: '/tutorial',
+      name: 'tutorial',
+      component: TutorialView,
       meta: {
         noAuth: false,
       }
