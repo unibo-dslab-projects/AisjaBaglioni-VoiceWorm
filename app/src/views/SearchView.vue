@@ -94,8 +94,7 @@ onMounted(async () => {
 
 <template>
     <Header/>
-
-    <body id="page">
+    <div class="page">
 
     <div class="page-title">
       <h1>Search</h1>
@@ -182,145 +181,13 @@ onMounted(async () => {
       <span>Page {{ page + 1 }}</span>
       <button @click="nextPage" :disabled="exercises.length < limit">Next</button>
     </div>
-  </body>
+  </div>
 
     <Footer/>
 
 </template>
 
 <style scoped>
-
-#page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;       
-  min-height: 100vh;        
-  gap: 20px;                
-  padding: 20px;             
-  box-sizing: border-box;
-}
-
-
-.table-wrapper {
-  padding-top: 20px;
-  padding-bottom: 20px;
-}
-
-
-table {
-  width: 80%;
-  table-layout: fixed;
-  margin: 0 auto;
-  border: 2px solid #ccc;
-  border-collapse: collapse;
-  box-shadow: 0 4px 12px var(--shadow-color);
-}
-
-th {
-  background-color: var(--table-color);
-  color: var(--text-inverse);
-}
-
-th,
-td {
-  white-space: normal;      
-  word-break: break-word;   
-  overflow-wrap: anywhere; 
-  border: 1px solid #ccc;
-  padding: 12px 16px;
-}
-
-tbody tr:nth-child(odd) {
-  background-color: var(--table-row-odd);
-}
-
-tbody tr:nth-child(even) {
-  background-color: var(--table-row-even);
-}
-
-.tags-cell {
-  max-width: 100%;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-.exercise-link, .user-link {
-  color: var(--table-color);
-  display: block; 
-}
-
-.exercise-link:hover, .user-link:hover{
-  color: #ff76df;
-}
-
-.tooltip {
-  min-width: 100px;
-  max-width: 260px;
-  position: absolute;
-  bottom: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #585858;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  white-space: normal;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 10;
-}
-
-.tag.more:hover .tooltip {
-  opacity: 1;
-}
-
-.tag {
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: white;
-  position: relative;
-  transition: transform 0.1s, filter 0.1s;
-  margin-right: 5px;
-}
-
-.tag:hover {
-  transform: translateY(-1px);
-  filter: brightness(0.9);
-  user-select: none;
-}
-
-.tag.more {
-  background-color: #999999;
-  cursor: default;
-}
-
-.page-title {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.page-title h1 {
-  padding-top: 20px;
-  font-size: 2.5rem; 
-  font-weight: 300;
-  margin: 0;
-}
-
-.title-underline {
-  width: 250px;
-  height: 2px;  
-  background-color: var(--text-color); 
-  border-radius: 2px;
-  margin-top: 8px; 
-  margin-bottom: 20px;
-}
 
 .search-container {
   display: flex;
@@ -401,13 +268,6 @@ tbody tr:nth-child(even) {
 .help-tooltip:hover .tooltip-dropdown {
   opacity: 1;
   pointer-events: auto;
-}
-
-.results-per-page {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
 }
 
 #limit-select {

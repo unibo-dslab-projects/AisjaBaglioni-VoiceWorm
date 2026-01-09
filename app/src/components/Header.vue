@@ -47,12 +47,14 @@ document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
 
 <template>
     <header :class="{ dark: theme.darkMode }">
-      <div>
+      <div id="header-left">
         <router-link to="/" class="logo-link">
         <img :src="theme.darkMode ? '/logo_dark.svg' : '/logo_white.svg'" alt="App Logo" class="app-logo" />
         </router-link>
       </div>
-      <div class="buttons is-spaced">
+
+      <div id="header-right">
+      <div v-if="credentials.token" class="buttons is-spaced">
       <button :class="buttonClass" class="button is-link" @click="create">Create</button>
       <button :class="buttonClass" class="button is-danger" @click="search">Search</button>
       <button :class="buttonClass"  class="button is-info is-light" @click="tutorial">Tutorial</button>
@@ -79,25 +81,40 @@ document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
             </div>
           </div>
     </div>
-            <button class="button dark-toggle" @click="theme.toggleDarkMode">
-              <i :class="theme.darkMode ? 'fas fa-moon' : 'fas fa-sun'"></i>
-            </button>
       </div>
+
+      <div>
+      <button class="button dark-toggle" @click="theme.toggleDarkMode">
+      <i :class="theme.darkMode ? 'fas fa-moon' : 'fas fa-sun'"></i>
+      </button>
+      </div>
+      </div>
+
     </header>
 </template>
 
 <style scoped>
+#header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .app-logo {
   height: 80px;
   width: auto;
   padding-top: 10px;
-  padding-left: 50px;
+}
+
+.logo img {
+  display: block;
 }
 
 .buttons {
   display: flex;
-  gap: 12px;
-  padding-right: 50px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 20px;
 }
 
 .dark-toggle {
@@ -107,14 +124,13 @@ document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
   cursor: pointer;
   font-size: 1.2rem;
   color: #4a4a4a;
-}
-
-.logo img {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dropdown-menu {
-  min-width: 100px;
+  min-width: 100px; 
 }
 
 .logout-item {

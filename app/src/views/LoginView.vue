@@ -3,6 +3,8 @@ import { useCredentials } from '@/stores/credentials';
 import axios from 'axios';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Header from '@/components/Header.vue';
+import Footer from '@/components/Footer.vue';
 
 const router = useRouter();
 const credentials = useCredentials();
@@ -38,12 +40,17 @@ status = false;
 </script>
 
 <template>
-  <div id="page">
-    <h1>Accedi a VoiceWorm</h1>
+  <Header/>
+  <div class="page">
+    <div class="page-title">
+      <h1>Sign in to VoiceWorm</h1>
+      <div class="title-underline"></div>
+    </div>
 
-    <form @submit.prevent="handleLogin">
+
+    <form class="access-form" @submit.prevent="handleLogin">
       <div>
-        <label for="email">Email:</label>
+        <label for="email">E-mail:</label>
         <input type="email" id="email" v-model="email" required />
       </div>
 
@@ -56,25 +63,16 @@ status = false;
     </form>
 
     <div>
-      <p id="errormessage">{{ message }}</p>
+      <p class="errormessage">{{ message }}</p>
     </div>
 
-    <p>
-      Non hai un account?
-      <router-link to="/register">Registrati</router-link>
+    <p class="switchto">
+      Don't have an account?
+      <router-link to="/register">Sign up</router-link>
     </p>
   </div>
+  <Footer/>
 </template>
 
 <style scoped>
-#errormessage {
-  color: red;
-}
-
-#page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;  
-}
 </style>

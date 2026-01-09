@@ -36,11 +36,21 @@ body {
   color: var(--text-color);
 }
 
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;       
+  min-height: 100vh;        
+  gap: 20px;                
+  padding: 20px;             
+  box-sizing: border-box;
+}
+
+
 header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
+  padding: 16px 60px;
   background: var(--header-bg);
   border-bottom: 1px solid rgba(0,0,0,0.1);
   box-shadow: 0 2px 6px rgba(0,0,0,0.12);
@@ -60,6 +70,7 @@ footer {
 }
 
 //Tags 
+
 body[data-theme="light"] {
   --tag-Interval: #7bdc9a; 
   --tag-Protocol: #7fbfff; 
@@ -79,7 +90,42 @@ body[data-theme="dark"] {
 .tag.Scale { background-color: var(--tag-Scale); }
 .tag.Objective { background-color: var(--tag-Objective); }
 
-// Table and pagination
+.tag.more:hover .tooltip {
+  opacity: 1;
+}
+
+.tag {
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: white;
+  position: relative;
+  transition: transform 0.1s, filter 0.1s;
+  margin-right: 5px;
+}
+
+.tag:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.9);
+  user-select: none;
+}
+
+.tag.more {
+  background-color: #999999;
+  cursor: default;
+}
+
+.exercise-link, .user-link {
+  color: var(--table-color);
+  display: block; 
+}
+
+.exercise-link:hover, .user-link:hover{
+  color: #ff76df;
+}
+
+// Pagination
 
 .pagination {
   display: flex;
@@ -116,4 +162,171 @@ body[data-theme="dark"] {
   color: var(--text-color);
 }
 
+// Table
 
+.table-wrapper {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+
+table {
+  width: 80%;
+  table-layout: fixed;
+  margin: 0 auto;
+  border: 2px solid #ccc;
+  border-collapse: collapse;
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+th {
+  background-color: var(--table-color);
+  color: var(--text-inverse) !important;
+}
+
+th,
+td {
+  white-space: normal;      
+  word-break: break-word;   
+  overflow-wrap: anywhere; 
+  border: 1px solid #ccc;
+  padding: 12px 16px;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: var(--table-row-odd);
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--table-row-even);
+}
+
+.tags-cell {
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.tooltip {
+  min-width: 100px;
+  max-width: 260px;
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #585858;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: normal;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+// Title
+
+.page-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-title h1 {
+  padding-top: 20px;
+  font-size: 2.5rem; 
+  font-weight: 300;
+  margin: 0;
+}
+
+.title-underline {
+  width: 250px;
+  height: 2px;  
+  background-color: var(--text-color); 
+  border-radius: 2px;
+  margin-top: 8px; 
+  margin-bottom: 20px;
+}
+
+// Login and register
+
+.access-title {
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.errormessage {
+  color: #ef233c;
+  font-weight: 500;
+}
+
+.access-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+  background: var(--table-row-even); /* un leggero contrasto */
+  padding: 30px 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px var(--shadow-color);
+}
+
+.access-form label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.access-form input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.access-form input:focus {
+  outline: none;
+  border-color: var(--table-color);
+  box-shadow: 0 0 0 2px rgba(107, 119, 255, 0.2);
+}
+
+.access-form button[type="submit"] {
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--table-color);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.access-form button[type="submit"]:hover {
+  background-color: #6c63ff; /* un po’ più scuro al passaggio */
+}
+
+.switchto, .errormessage {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.switchto a {
+  color: var(--table-color);
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 5px;
+}
+
+.switchto a:hover {
+  text-decoration: underline;
+}

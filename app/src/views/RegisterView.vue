@@ -2,6 +2,8 @@
 import axios from 'axios';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Header from '@/components/Header.vue';
+import Footer from '@/components/Footer.vue';
 
 const router = useRouter();
 
@@ -35,13 +37,17 @@ try {
 </script>
 
 <template>
-  <div id="page">
-    <h1>Registrati a VoiceWorm</h1>
+  <Header/>
+  <div class="page">
+      <div class="page-title">
+      <h1>Create an account</h1>
+      <div class="title-underline"></div>
+    </div>
 
-    <form @submit.prevent="handleRegister">
+    <form class="access-form" @submit.prevent="handleRegister">
         
       <div>
-        <label for="email">Email:</label>
+        <label for="email">E-mail:</label>
         <input type="email" id="email" v-model="email" required />
       </div>
 
@@ -59,14 +65,15 @@ try {
     </form>
 
     <div>
-      <p id="errormessage">{{ message }}</p>
+      <p class="errormessage">{{ message }}</p>
     </div>
 
-    <p>
-      Hai già un account?
-      <router-link to="/login">Accedi</router-link>
+    <p class="switchto">
+      Already registered?
+      <router-link to="/login">Sign in</router-link>
     </p>
   </div>
+  <Footer/>
 </template>
 
 <style scoped>

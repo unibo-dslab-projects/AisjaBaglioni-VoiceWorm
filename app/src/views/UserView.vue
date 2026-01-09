@@ -2,8 +2,10 @@
 import { useCredentials } from '@/stores/credentials';
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import Header from '@/components/Header.vue';
+import Footer from '@/components/Footer.vue';
 
 const route = useRoute();
 const credentials = useCredentials();
@@ -52,8 +54,15 @@ onMounted(async () => {
 </script>
 
 <template>
-<main id="page">
-<h1>{{ user_info?.username }}</h1>
+  
+    <Header/>
+    <div id="page">
+
+    <div class="page-title">
+      <h1>{{ user_info?.username }}</h1>
+      <div class="title-underline"></div>
+    </div>
+
 <table>
       <thead>
         <tr>
@@ -76,7 +85,7 @@ onMounted(async () => {
             <span
               v-for="tag in exercise.tags.slice(0, MAX_TAGS)"
               :key="tag.id"
-              class="tag"
+              :class="['tag', tag.category]"
             >
               {{ tag.label }}
             </span>
@@ -95,65 +104,12 @@ onMounted(async () => {
 
             <span v-if="exercise.tags.length === 0">—</span>
           </td>
-
         </tr>
       </tbody>
     </table>
-    </main>
+  </div>
+  <Footer/>
 </template>
 
 <style scoped>
-#page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;       
-  min-height: 100vh;        
-  gap: 20px;                
-  padding: 20px;             
-  box-sizing: border-box;
-}
-
-.tags-cell {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  max-width: 320px;
-}
-
-.tag {
-  background: #eef1f5;
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 0.8rem;
-  position: relative;
-}
-
-.tag.more {
-  background: #ddd;
-  cursor: default;
-}
-
-.tooltip {
-  min-width: 100px;
-  position: absolute;
-  bottom: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #585858;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  white-space: normal;
-  max-width: 260px;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 10;
-}
-
-.tag.more:hover .tooltip {
-  opacity: 1;
-}
 </style>
