@@ -56,7 +56,7 @@ onMounted(async () => {
 <template>
   
     <Header/>
-    <div id="page">
+    <div class="page">
 
     <div class="page-title">
       <h1>{{ user_info?.username }}</h1>
@@ -108,6 +108,7 @@ onMounted(async () => {
       </tbody>
     </table>
   </div>
+
   <Footer/>
 </template>
 

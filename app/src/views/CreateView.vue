@@ -512,8 +512,8 @@ function togglePause() {
       </div>
 
 
-  <div class="form-section">
-  <label class="form-label">Rendered Score</label>
+  <div class="form-section" id="renderedscore">
+  <label class="form-label" for="renderedscore">Rendered Score</label>
   <div id="score-container">
     <div id="target"></div>
     <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
@@ -521,7 +521,7 @@ function togglePause() {
 </div>
 
   <div class="form-section">
-  <label class="form-label">Tempo and Steps</label>
+  <label class="form-label" for="bpm-control">Tempo and Steps</label>
 
   <div id="bpm-control" class="bpm-control">
     <label for="bpm">BPM: </label>
@@ -562,7 +562,7 @@ function togglePause() {
 </div>
 
 <div class="form-section">
-  <label class="form-label">Transposition Range</label>
+  <label class="form-label" for="note-group">Transposition Range</label>
 
   <div class="note-group">
     <label class="note-label" for="starting_note">Starting note:</label>
