@@ -348,6 +348,17 @@ app.put("/exercise/:id", auth, async (c) => {
   return c.text("Exercise updated successfully");
 });
 
+app.delete("/exercise/:exerciseid", auth, async (c) => {
+  const user = c.get("user");
+  const exercise_id = c.req.param("exerciseid");
+  const db = c.env.DB;
+  const result = await db.prepare("DELETE FROM exercise WHERE userID = ? AND exerciseID = ?").bind(user.id, exercise_id).run();
+  if (!result.success) {
+    return c.text("Cannot remove exercise", 400);
+  }
+  return c.text("Exercise removed successfully");
+});
+
 // Favorite routes
 app.post("/favorites/:exerciseid", auth, async (c) => {
   const user = c.get("user");

@@ -8,7 +8,8 @@ import lodash from 'lodash';
 import { Input, Score, Note, Tuplet, Chord } from '@/lib/abcp';
 import { KEYS } from '@/lib/keys';
 import axios from 'axios';
-
+import Header from '@/components/Header.vue';
+import Footer from '@/components/Footer.vue';
 
 const credentials = useCredentials();
 const router = useRouter();
@@ -21,7 +22,7 @@ const client = axios.create({
 });
 
 //Nome dell'esercizio
-const exerciseName = ref("New Exercise");
+const exerciseName = ref("Choose a significant name");
 //Testo scritto dall'utente
 const userText = ref("X:1\nK:C\n|cdcdz2z2|\n");
 //Testo renderizzato da abc
@@ -125,15 +126,6 @@ async function fetchTags() {
 onMounted(() => {
     renderScore();
     logTags();
-    /*console.log("On Mounted");
-    console.log("User text:\n", userText.value);
-    console.log("Visibility:", visibility.value);
-    console.log("BPM:", bpm.value);
-    console.log("Ascending steps:", ascendingSteps.value);
-    console.log("Descending steps:", descendingSteps.value);
-    console.log("Starting semitones:", startingSemitones.value);
-    console.log("Highest semitones:", highestSemitones.value);
-    console.log("Lowest semitones:", lowestSemitones.value);*/
 });
 
 
@@ -476,26 +468,65 @@ function togglePause() {
 </script>
 
 <template>
-  <main>
-    <div id="page">
-      <h1>VoiceWorm</h1>
-      <fieldset>
-      <legend>Exercise Name</legend>
-      <input type ="text" id="exerciseName" class="text" v-model="exerciseName"/>
-    </fieldset>
+    <Header/>
+    <div class="page">
+    <div class="page-title">
+      <h1>Create a new exercise</h1>
+      <div class="title-underline"></div>
+    </div>
 
-      <fieldset>
-      <legend>Input ABC Notation</legend>
-      <textarea id="exerciseInput" class="text" v-model="userText"></textarea>
-      <br>
-      <button type="button" @click="renderScore">Enter</button>
-    </fieldset>
-    <fieldset>
-    <legend>Tempo and Steps</legend>
-    <div id="bpm-control">
-        <label for="bpm">BPM: </label>
+      <div class="form-section">
+        <label class="form-label" for="exercise-name">
+          Exercise name
+        </label>
+
         <input
-      id="bpm"
+          type="text"
+          maxlength="50"
+          id="exercise-name"
+          class="form-input"
+          v-model="exerciseName"
+        />
+      </div>
+
+      <div class="form-section">
+        <label class="form-label" for="exerciseInput">
+          ABC Notation
+        </label>
+        <textarea
+          id="exerciseInput"
+          class="exercise-text"
+          rows="8"
+          v-model="userText"
+        ></textarea>
+
+        <div class="enter-buttons">
+          <button type="button" class="action-button" @click="renderScore">Enter</button>
+          <button type="button" @click="play" class="action-button">Play</button>
+          <button :disabled="!isPlaying" @click="togglePause" class="action-button">
+            {{ isPaused ? 'Resume' : 'Pause' }}
+          </button>
+          <button type="button" @click="downloadWav" class="action-button">Save WAV</button>
+          <button type="button" @click="downloadSvg" class="action-button">Save SVG</button>
+        </div>
+      </div>
+
+
+  <div class="form-section">
+  <label class="form-label">Rendered Score</label>
+  <div id="score-container">
+    <div id="target"></div>
+    <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
+  </div>
+</div>
+
+  <div class="form-section">
+  <label class="form-label">Tempo and Steps</label>
+
+  <div id="bpm-control" class="bpm-control">
+    <label for="bpm">BPM: </label>
+    <input
+      class="bpm form-input"
       type="number"
       v-model.number="bpm"
       min="1"
@@ -509,30 +540,33 @@ function togglePause() {
       min="1"
       max="300"
       step="1"
+      class="range-input"
     />
+  </div>
+
+  <div id="step-control" class="step-control">
+    <div class="step-group">
+      <label for="ascending_steps">Ascending steps:</label>
+      <select v-model.number="ascendingSteps" id="ascending_steps" class="select-input">
+        <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
+      </select>
     </div>
 
-    <div id="step-control">
-        <div id="ascending-step">
-        <label for="ascending_steps">Ascending steps: </label>
-        <select v-model.number="ascendingSteps" name="ascending_steps" id="ascending_steps">
-          <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
-        </select>
-        </div>
-        <div id="descending_step">
-        <label for="descending_steps">Descending steps: </label>
-        <select v-model.number="descendingSteps" name="descending_steps" id="descending_steps">
-          <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
-        </select>
-      </div>
+    <div class="step-group">
+      <label for="descending_steps">Descending steps:</label>
+      <select v-model.number="descendingSteps" id="descending_steps" class="select-input">
+        <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
+      </select>
     </div>
-    </fieldset>
+  </div>
+</div>
 
-<fieldset>
-    <legend>Transposition Range</legend>
-    <div id="starting-control">
-    <label for="starting_note">Starting note: </label>
-    <select v-model="startingNote" name="starting_note" id="starting_note">
+<div class="form-section">
+  <label class="form-label">Transposition Range</label>
+
+  <div class="note-group">
+    <label class="note-label" for="starting_note">Starting note:</label>
+    <select v-model="startingNote" id="starting_note" class="select-input">
       <option value="0">C</option>
       <option value="1">C#/Db</option>
       <option value="2">D</option>
@@ -546,21 +580,21 @@ function togglePause() {
       <option value="10">A#/Bb</option>
       <option value="11">B</option>
     </select>
-      <label for="octaves"></label>
-    <select  v-model="startingOctave" name="octaves" id="octaves">
+
+    <select v-model="startingOctave" id="octaves" class="select-input">
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
-      <option value="4" selected>4</option>
+      <option value="4">4</option>
       <option value="5">5</option>
       <option value="6">6</option>
       <option value="7">7</option>
     </select>
-    </div>
+  </div>
 
-    <div id="highest-control">
-    <label for="highest_note">Highest note: </label>
-    <select v-model="highestNote" name="highest_note" id="highest_note">
+  <div class="note-group">
+    <label class="note-label" for="highest_note">Highest note:</label>
+    <select v-model="highestNote" id="highest_note" class="select-input">
       <option value="0">C</option>
       <option value="1">C#/Db</option>
       <option value="2">D</option>
@@ -574,22 +608,22 @@ function togglePause() {
       <option value="10">A#/Bb</option>
       <option value="11">B</option>
     </select>
-      <label for="highest-octave"></label>
-    <select  v-model="highestOctave" name="highest-octave" id="highest-octave">
+
+    <select v-model="highestOctave" id="highest-octave" class="select-input">
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
       <option value="4">4</option>
-      <option value="5" selected>5</option>
+      <option value="5">5</option>
       <option value="6">6</option>
       <option value="7">7</option>
     </select>
-</div>
+  </div>
 
- <div id="lowest-control">
-    <label for="lowest_note">Lowest note: </label>
-    <select v-model="lowestNote" name="lowest_note" id="lowest_note">
-      <option value="0" >C</option>
+  <div class="note-group">
+    <label class="note-label" for="lowest_note">Lowest note:</label>
+    <select v-model="lowestNote" id="lowest_note" class="select-input">
+      <option value="0">C</option>
       <option value="1">C#/Db</option>
       <option value="2">D</option>
       <option value="3">D#/Eb</option>
@@ -602,51 +636,49 @@ function togglePause() {
       <option value="10">A#/Bb</option>
       <option value="11">B</option>
     </select>
-      <label for="lowest-octave"></label>
-    <select  v-model="lowestOctave" name="lowest-octave" id="lowest-octave">
+
+    <select v-model="lowestOctave" id="lowest-octave" class="select-input">
       <option value="1">1</option>
       <option value="2">2</option>
-      <option value="3" selected>3</option>
+      <option value="3">3</option>
       <option value="4">4</option>
       <option value="5">5</option>
       <option value="6">6</option>
       <option value="7">7</option>
     </select>
+  </div>
 </div>
-</fieldset>
 
-<fieldset>
-      <legend>Actions</legend>
-      <div id="buttons">
-        <button type="button" @click="transposeAndRender">Generate</button>
-        <button type="button" @click="resetToDefault">Reset</button>
-        <button type="button" @click="play">Play</button>
-        <button :disabled="!isPlaying" @click="togglePause">{{ isPaused ? 'Resume' : 'Pause' }}</button>
-        <button type="button" @click="downloadWav">Save WAV</button>
-        <button type="button" @click="downloadSvg">Save SVG</button>
-      </div>
-</fieldset>
 
-<fieldset>
-    <legend>Rendered Score</legend>
-    <div id="container">
-      <div id="target"></div>
-      <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
+<div class="form-section">
+  <label class="form-label">Actions</label>
+  <div class="action-buttons">
+    <button type="button" @click="transposeAndRender" class="action-button">Generate</button>
+    <button type="button" @click="resetToDefault" class="action-button">Reset</button>
+  </div>
+</div>
+
+
+
+
+<div class="form-section">
+  <label class="form-label">Tags</label>
+  <div v-for="(tags, category) in groupedTags" :key="category" class="tag-group">
+    <div class="category-name">{{ category }}</div>
+    <div class="tags">
+      <label v-for="tag in tags" :key="tag.id" class="tag-label">
+        <input type="checkbox" v-model="selectedTags[tag.id]" />
+        {{ tag.label }}
+      </label>
     </div>
-</fieldset>
+  </div>
+</div>
 
-    <fieldset>
-        <legend>Tags</legend>
-        <fieldset v-for="(tags, category) in groupedTags" :key="category" class="tag-group">
-            <legend>{{ category }}</legend>
-            <div v-for="tag in tags" :key="tag.id" class="tag-label"><input type="checkbox" v-model="selectedTags[tag.id]"/>{{ tag.label }}</div>
-        </fieldset>
-    </fieldset>
 
-    <fieldset>
-      <legend>Visibility</legend>
+    <div class="form-section">
+      <label class="form-label">Visibility</label>
 
-      <div id="visibility">
+      <div class="visibility">
       <input
         type="radio"
         id="public"
@@ -665,67 +697,42 @@ function togglePause() {
       </div>
 
       <div>
+        </div>
+      <div class="form-section">
       <button id="submit-button" @click="submitExercise">Submit Exercise</button>
       <div v-if="message" class="status-message">{{ message }}</div>
       </div>
-    </fieldset>
+    </div>
 
     </div> 
-  </main>
+    <Footer/>
 </template>
 
 
 <style scoped>
-
-fieldset {
-  padding: 20px;
-  width: 90%;
-}
-
-.text {
-  width: 50%;
-}
-
-#starting-control, #highest-control, #lowest-control, #step-control, #visibility, #bpm-control, #buttons {
-  padding: 10px;
-}
-
-#submit-button {
-  margin-left: 10px;
-}
-
-#ascending-step, #descending_step {
-  display: inline-block;
-  margin-right: 20px;
-}
-
-#buttons {
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: 12px;
-}
-
-#page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;  
-}
-
-#container {
-  margin: 10px;
-  position: relative;
-  min-height: 50px;
-  border: 1px solid #ddd;
-  background-color: white;
-}
-
 #scrollbar {
   position: absolute;
-  width: 2px;
-  background-color: rgba(255, 0, 0, 0.7);
+  width: 3px;
+  background-color: rgba(255, 0, 251, 0.7);
   transition: all 50ms linear;
   left: 10px;
   z-index: 10;
+  opacity: 0.8;
 }
+
+
+#score-container {
+  margin: 10px;
+  position: relative;
+  min-height: 50px;
+  border: 1px solid var(--accent-color);
+  background-color: var(--score-bg);
+  color: var(--score-text);
+}
+
+#target {
+  min-height: 50px;
+}
+
+
 </style>
