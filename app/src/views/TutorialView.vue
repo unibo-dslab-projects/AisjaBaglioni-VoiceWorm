@@ -45,62 +45,62 @@ import Footer from '@/components/Footer.vue';
     <div id="voiceworm" class="section">
       <h2 >What's VoiceWorm?</h2>
       <p>VoiceWorm is a play on words for “Voice Warm (Up)”.
-      The application is designed for creating vocal warm-up exercises. 
+      The application is designed for creating <strong>vocal warm-up exercises</strong>. 
     </p>
     </div>
 
     <div id="abc-notation" class="section">
       <h2>ABC Notation</h2>
       <p>
-        The backbone of VoiceWorm is ABC Notation. 
-        This grammar allows music to be written not as notes on a score, but as a string of text. 
+        The backbone of VoiceWorm is <strong>ABC Notation. </strong>
+        This grammar allows music to be written not as notes on a score, but as a <strong>string of text. </strong>
         As a grammar, abcnotation has well-defined rules.
         Let's take a look at the ones you will use.
     </p>
     <img class="tutorial-image" src="/public/TUTORIAL/header.svg">
     <p>
         This is the structure of an ABC text.
-        As you can see, we can divide it into two parts: the header and the body.
-        The header will contain information regarding the general rules of our score.
+        As you can see, we can divide it into two parts: the <strong>header</strong> and the <strong>body</strong>. <br>
+        The header will contain information regarding the general rules of our score. <br>
         The body is where we will write music, separating each bar with the "|" symbol.
         <ul>
-          <li><code>X:1</code> → This is the identification number of the score. Since we work with only one score at a time, leave it as it is</li>
-    <li><code>T: Aisja's</code> → This is the title</li>
-    <li><code>K: C</code> → This is the key (C = Do) and determines the score alterations</li>
-    <li><code>M: 4/4</code> → This is the time signature, which means that each bar should last 4/4</li>
-    <li><code>L: 1/4</code> → This means that the default length of notes will be 1/4, and the default length of rests will be 1/8</li>
-    <li><code>|C|</code> → Each bar is encapsulated in pipes, so this is one bar containing the note C</li>
+          <li><code>X:1</code> → This is the <strong>identification number</strong> of the score. Since we work with only one score at a time, leave it as it is</li>
+    <li><code>T: Aisja's</code> → This is the <strong>title</strong></li>
+    <li><code>K: C</code> → This is the key (C = Do) and determines the score <strong>alterations</strong></li>
+    <li><code>M: 4/4</code> → This is the <strong>time signature</strong>, which means that each bar should last 4/4</li>
+    <li><code>L: 1/4</code> → This means that the <strong>default length</strong> of notes will be 1/4, and the default length of rests will be 1/8</li>
+    <li><code>|C|</code> → Each <strong>bar</strong> is encapsulated in pipes, so this is one bar containing the note C</li>
   </ul>
     </p>
     </div>
     <div id="note-duration" class="section">
       <h2>Note Duration</h2>
       <p>
-The duration of the notes, in the absence of the L parameter in the header, is 1/8 (quaver). 
+The <strong>duration</strong> of the notes, in the absence of the L parameter in the header, is 1/8 (quaver). 
 If the L parameter is present, the notes will last exactly as long as L.
-Rests, on the other hand, are worth half of L.
+<strong>Rests</strong>, on the other hand, are worth half of L.
     </p>
     <img class="tutorial-image" src="/public/TUTORIAL/length.svg">
     <p>
       <ul>
-        <li>To change the value of a note, multiply it by an integer or fractional value, or divide it by an integer (e.g., <code>C2</code>, <code>C/3</code>)</li>
-    <li>Rest symbols are written as <code>z</code> and are worth half of <code>L</code>. They can also be multiplied or divided like notes</li>
+        <li>To <strong>change the value</strong> of a note, multiply it by an integer or fractional value, or divide it by an integer (e.g., <code>C2</code>, <code>C/3</code>)</li>
+    <li><strong>Rest symbols</strong> are written as <code>z</code> and are worth half of <code>L</code>. In terms of duration, they behave like notes</li>
       </ul>
     </p>
     </div>
 
     <div id="accidentals" class="section">
       <h2>Accidentals</h2>
-    <p>Accidentals are alterations written before the notes inside of the score.</p>
+    <p>Accidentals are <strong>alterations</strong> written before the notes inside of the score.</p>
     <img class="tutorial-image" src="/public/TUTORIAL/accidentals.svg">
     <p>
       
       <ul>
-        <li>Sharps ♯ are written as <code>^</code> → They raise the note by a semitone</li>
-    <li>Double sharps ♯♯ are written as <code>^^</code> → They raise the note by a tone</li>
-    <li>Flats ♭ are written as <code>_</code> → They lower the note by a semitone</li>
-    <li>Double flats ♭♭ are written as <code>__</code> → They lower the note by a tone</li>
-    <li>Naturals ♮ are written as <code>=</code> → They restore the pitch of a previously altered note</li>
+    <li><strong>Sharps ♯</strong> are written as <code>^</code> → They raise the note by a semitone</li>
+    <li><strong>Double sharps ♯♯</strong> are written as <code>^^</code> → They raise the note by a tone</li>
+    <li><strong>Flats ♭</strong> are written as <code>_</code> → They lower the note by a semitone</li>
+    <li><strong>Double flats ♭♭</strong> are written as <code>__</code> → They lower the note by a tone</li>
+    <li><strong>Naturals ♮</strong> are written as <code>=</code> → They restore the pitch of a previously altered note</li>
       </ul>
     </p>
     </div>
@@ -108,14 +108,14 @@ Rests, on the other hand, are worth half of L.
 
     <div id="octaves" class="section">
       <h2>Octaves</h2>
-    <p> In ABC Notation, octaves determine the pitch range of the notes. Notes can be written in different octaves using commas and apostrophes.</p>
+    <p> In ABC Notation, <strong>octaves</strong> determine the pitch range of the notes. Notes can be written in different octaves using commas and apostrophes.</p>
     <img class="tutorial-image" src="/public/TUTORIAL/octaves.svg">
     <p>
       
       <ul>
-      <li>Uppercase and lowercase matter: <code>C</code> is C4 (middle C), <code>c</code> is C5 (one octave higher)</li>
-    <li>Lower octaves: use commas after the note (<code>C,</code> = one octave below middle C)</li>
-    <li>Higher octaves: use apostrophes after the note (<code>C'</code> = one octave above middle C, <code>C''</code> = two octaves above)</li>
+    <li><strong>Uppercase and lowercase matter:</strong> <code>C</code> is C4 (middle C), <code>c</code> is C5 (one octave higher)</li>
+    <li><strong>Lower octaves:</strong> use commas after the note (<code>C,</code> = one octave below middle C)</li>
+    <li><strong>Higher octaves:</strong> use apostrophes after the note (<code>C'</code> = one octave above middle C, <code>C''</code> = two octaves above)</li>
       </ul>
     </p>
     </div>
@@ -141,10 +141,10 @@ Rests, on the other hand, are worth half of L.
 
     <div id="exname" class="section">
       <h2 >How To Use VoiceWorm</h2>
-      <p>Now we will explain step by step how to use the VoiceWorm exercise generator. Open the Create page and get started.</p>
+      <p>Now we will explain step by step how to use the VoiceWorm exercise generator. Open the <strong>Create</strong> page and get started.</p>
       <h2 >Exercise Name</h2>
       <p>
-        By writing in the text field, you will be able to choose a name for your exercise.
+        By writing in the text field, you will be able to choose a <strong>name</strong>> for your exercise.
         I recommend choosing a significant, unique name, to avoid duplicates and confusion later on.
     </p>
      <img class="tutorial-image" src="/public/TUTORIAL/1-ExName.svg">
@@ -190,7 +190,7 @@ Rests, on the other hand, are worth half of L.
 <div id="bpm" class="section">
   <h2>BPM (Beats Per Minute)</h2>
   <p>
-    The BPM indicates the playback speed of your score. 
+    The <strong>BPM</strong>> indicates the playback speed of your score. 
     Make sure to set it <strong>before clicking Play</strong>. 
     You can adjust it in two ways:
   </p>
@@ -221,7 +221,7 @@ Rests, on the other hand, are worth half of L.
 <div id="transpose" class="section">
   <h2>Transposition Range</h2>
 <p>
-    The <strong>Starting Note</strong> field represents the note you want to start singing from.
+    The <strong>Starting Note</strong> field represents <strong>the note you want to start singing from.</strong>
     The program will transpose the first note of the score to the note you selected. This ensures the exercise begins in a range suited to your voice.
   </p>
 
@@ -230,7 +230,7 @@ Rests, on the other hand, are worth half of L.
   </ul>
   <img class="tutorial-image" src="/public/TUTORIAL/7-Starting.svg">
   <p>
-    The <strong>Highest Note</strong> field determines the top note your warm-up will reach.
+    The <strong>Highest Note</strong> field determines <strong>the top note your warm-up will reach.</strong>
     The highest note of your initial score will be transposed step by step until it matches the value of this field. This way, the warm-up completes its first ascending cycle smoothly.
   </p>
 
@@ -240,7 +240,7 @@ Rests, on the other hand, are worth half of L.
    <img class="tutorial-image" src="/public/TUTORIAL/8-Highest.svg">
 
    <p>
-    The <strong>Lowest Note</strong> field determines how low the warm-up will descend.
+    The <strong>Lowest Note</strong> field determines <strong>how low the warm-up will descend.</strong>
     The warm-up starts from the lowest note of the last ascending iteration and gradually moves down to the value selected in this field. This way, the exercise completes its descending cycle smoothly.
   </p>
 
@@ -265,7 +265,7 @@ Rests, on the other hand, are worth half of L.
   <p>
     Here you can assign <strong>tags</strong> to your warm-up exercises. Tags help you organize, search, and filter your exercises more easily.  
     You can choose the visibility of your exercise, deciding whether it should be <strong>private</strong> or <strong>public</strong>.
-    Finally, you can save your exercise, whether private or public.
+    Finally, you can <strong>save</strong> your exercise, whether private or public.
     </p>
   <img class="tutorial-image" src="/public/TUTORIAL/10-Tags.svg">
 </div>
