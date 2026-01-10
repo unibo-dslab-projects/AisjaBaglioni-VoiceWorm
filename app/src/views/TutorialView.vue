@@ -27,7 +27,7 @@ import Footer from '@/components/Footer.vue';
         <li><router-link :to="{ hash: '#example' }">Example</router-link></li>
       </ul>
     </li>
-    <li><router-link :to="{ hash: '#howtouse' }">How To Use VoiceWorm</router-link></li>
+    <li><router-link :to="{ hash: '#exname' }">How To Use VoiceWorm</router-link></li>
     <ul>
       <li><router-link :to="{ hash: '#exname' }">Exercise Name</router-link></li>
       <li><router-link :to="{ hash: '#abcinput' }">ABC Input</router-link></li>
@@ -139,13 +139,9 @@ Rests, on the other hand, are worth half of L.
     <img class="tutorial-image" src="/public/TUTORIAL/example.svg">
     </div>
 
-    <div id="howtouse" class="section">
-      <h2 >How To Use VoiceWorm</h2>
-      <p>Now I will explain step by step how to use the VoiceWorm exercise generator. Open the Create page and get started.
-    </p>
-    </div>
-
     <div id="exname" class="section">
+      <h2 >How To Use VoiceWorm</h2>
+      <p>Now we will explain step by step how to use the VoiceWorm exercise generator. Open the Create page and get started.</p>
       <h2 >Exercise Name</h2>
       <p>
         By writing in the text field, you will be able to choose a name for your exercise.
