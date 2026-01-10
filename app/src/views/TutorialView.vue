@@ -27,6 +27,16 @@ import Footer from '@/components/Footer.vue';
         <li><router-link :to="{ hash: '#example' }">Example</router-link></li>
       </ul>
     </li>
+    <li><router-link :to="{ hash: '#howtouse' }">How To Use VoiceWorm</router-link></li>
+    <ul>
+      <li><router-link :to="{ hash: '#exname' }">Exercise Name</router-link></li>
+      <li><router-link :to="{ hash: '#abcinput' }">ABC Input</router-link></li>
+      <li><router-link :to="{ hash: '#controls' }">Controls</router-link></li>
+      <li><router-link :to="{ hash: '#bpm' }">BPM</router-link></li>
+      <li><router-link :to="{ hash: '#steps' }">Steps</router-link></li>
+      <li><router-link :to="{ hash: '#transpose' }">Transpose</router-link></li>
+      <li><router-link :to="{ hash: '#tags' }">Tags and Visibility</router-link></li>
+    </ul>
   </ul>
 </nav>
 
@@ -128,7 +138,143 @@ Rests, on the other hand, are worth half of L.
     <p>Below is an example of a two-bars score in A, with a default note length of 1/8. </p>
     <img class="tutorial-image" src="/public/TUTORIAL/example.svg">
     </div>
+
+    <div id="howtouse" class="section">
+      <h2 >How To Use VoiceWorm</h2>
+      <p>Now I will explain step by step how to use the VoiceWorm exercise generator. Open the Create page and get started.
+    </p>
     </div>
+
+    <div id="exname" class="section">
+      <h2 >Exercise Name</h2>
+      <p>
+        By writing in the text field, you will be able to choose a name for your exercise.
+        I recommend choosing a significant, unique name, to avoid duplicates and confusion later on.
+    </p>
+     <img class="tutorial-image" src="/public/TUTORIAL/1-ExName.svg">
+    </div>
+
+    <div id="abcinput" class="section">
+      <h2>ABC Input </h2>
+    <p>
+    This is where you will enter the notes of your score in <strong>ABC notation</strong>. 
+    The text will change after generation! Make sure you have a valid header and that each bar is separated by <code>|</code>.
+    The rendered score will appear below.
+  </p>
+     <img class="tutorial-image" src="/public/TUTORIAL/2-ABC.svg">
+    </div>
+
+<div id="controls" class="section">
+  <h2>Controls</h2>
+    <p>
+    Here are the main commands you can use to interact with your score:
+  </p>
+
+  <ul class="command-list">
+    <li><strong>Enter</strong> → Render the score based on the ABC notation you entered.</li>
+    <li><strong>Play</strong> → Play the rendered score.</li>
+    <li><strong>Pause / Resume</strong> → Pause or resume playback.</li>
+    <li><strong>Save WAV</strong> → Export the score as a WAV audio file.</li>
+    <li><strong>Save SVG</strong> → Export the score as an SVG image file.</li>
+  </ul>
+
+  <img class="tutorial-image" src="/public/TUTORIAL/3-Commands.svg">
+
+  <p>Once you are satisfied with your settings, you can generate the warm-up:</p>
+
+  <ul class="command-list">
+    <li><strong>Generate</strong> → Generates a new score based on your settings.</li>
+    <li><strong>Reset</strong> → Resets the score to the default state.</li>
+  </ul>
+
+  <img class="tutorial-image" src="/public/TUTORIAL/4-Actions.svg">
+
+</div>
+
+<div id="bpm" class="section">
+  <h2>BPM (Beats Per Minute)</h2>
+  <p>
+    The BPM indicates the playback speed of your score. 
+    Make sure to set it <strong>before clicking Play</strong>. 
+    You can adjust it in two ways:
+  </p>
+
+  <ul class="command-list">
+    <li><strong>Slider:</strong> Move the range input to set the desired BPM.</li>
+    <li><strong>Input:</strong> Enter a number directly (maximum 300 BPM).</li>
+  </ul>
+
+  <img class="tutorial-image" src="/public/TUTORIAL/5-BPM.svg">
+</div>
+
+<div id="steps" class="section">
+  <h2>Steps</h2>
+  <p>
+    The warm-up you are creating will move <strong>up</strong> for a certain number of bars, 
+    and then <strong>down</strong> for a certain number of bars.
+    You can choose how gradual or steep the changes are:
+  </p>
+
+  <ul>
+    <li><strong>Ascending Steps:</strong> Number of semitones to increase between each iteration during the ascent.</li>
+    <li><strong>Descending Steps:</strong> Number of semitones to decrease between each iteration during the descent.</li>
+  </ul>
+  <img class="tutorial-image" src="/public/TUTORIAL/6-Ascending.svg">
+</div>
+
+<div id="transpose" class="section">
+  <h2>Transposition Range</h2>
+<p>
+    The <strong>Starting Note</strong> field represents the note you want to start singing from.
+    The program will transpose the first note of the score to the note you selected. This ensures the exercise begins in a range suited to your voice.
+  </p>
+
+  <ul class="command-list">
+    <li><strong>Starting Note:</strong> The note where the warm-up will begin. All subsequent notes will be transposed accordingly.</li>
+  </ul>
+  <img class="tutorial-image" src="/public/TUTORIAL/7-Starting.svg">
+  <p>
+    The <strong>Highest Note</strong> field determines the top note your warm-up will reach.
+    The highest note of your initial score will be transposed step by step until it matches the value of this field. This way, the warm-up completes its first ascending cycle smoothly.
+  </p>
+
+  <ul class="command-list">
+    <li><strong>Highest Note:</strong> The target note for the end of the ascending phase. Transposition is gradual according to the steps defined in ascending steps.</li>
+  </ul>
+   <img class="tutorial-image" src="/public/TUTORIAL/8-Highest.svg">
+
+   <p>
+    The <strong>Lowest Note</strong> field determines how low the warm-up will descend.
+    The warm-up starts from the lowest note of the last ascending iteration and gradually moves down to the value selected in this field. This way, the exercise completes its descending cycle smoothly.
+  </p>
+
+  <ul class="command-list">
+    <li><strong>Lowest Note:</strong> The target note for the end of the descending phase. Transposition occurs step by step according to the steps defined in descending steps.</li>
+  </ul>
+
+  <img class="tutorial-image" src="/public/TUTORIAL/9-Lowest.svg">
+
+   <p>
+    At the end of your settings, your warm-up will follow this cycle:
+  </p>
+  <ol class="command-list">
+    <li><strong>Starting Note:</strong> The warm-up begins from the note you selected in the <code>Starting Note</code> field. The first note of the score will be transposed to this value.</li>
+    <li><strong>Ascending Phase:</strong> The warm-up gradually rises until the highest note in your initial score reaches the <code>Highest Note</code> value, step by step according to the <code>Ascending Steps</code> field.</li>
+    <li><strong>Descending Phase:</strong> The warm-up then gradually descends until the lowest note reaches the <code>Lowest Note</code> value, following the <code>Descending Steps</code> field.</li>
+  </ol>
+</div>
+
+<div id="tags" class="section">
+  <h2>Tags and Visibility</h2>
+  <p>
+    Here you can assign <strong>tags</strong> to your warm-up exercises. Tags help you organize, search, and filter your exercises more easily.  
+    You can choose the visibility of your exercise, deciding whether it should be <strong>private</strong> or <strong>public</strong>.
+    Finally, you can save your exercise, whether private or public.
+    </p>
+  <img class="tutorial-image" src="/public/TUTORIAL/10-Tags.svg">
+</div>
+
+</div>
 
     </div>
 </div>
