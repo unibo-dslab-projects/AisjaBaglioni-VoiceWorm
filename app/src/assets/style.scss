@@ -583,3 +583,35 @@ tbody tr:nth-child(even) {
   font-size: 0.9rem;
 }
 
+.manual-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: var(--card-bg, #f7f7fb);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Riga singola */
+.manual-mode > div {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+
+/* Label (Start / Ascending / Descending) */
+.manual-mode > div::first-letter {
+  font-weight: 600;
+}
+
+/* Valore numerico */
+.manual-mode span,
+.manual-mode div > :nth-child(3) {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--accent-color, #6c63ff);
+}

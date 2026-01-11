@@ -79,6 +79,15 @@ const groupedTags = computed(() => {
 //Timer del synth, da resettare a ogni nuovo play
 let timer = null; 
 
+//Trasposizione manuale
+const manualStartOffset = ref(0);
+const manualAscendingOffset = ref(0);
+const manualDescendingOffset = ref(0);
+const baseHeader = computed(() => splitAbcHeaderBody(userText.value).header);
+const baseBody   = computed(() => splitAbcHeaderBody(userText.value).body);
+
+
+//Messaggio di errore
 const message = ref('');
 
 
@@ -479,6 +488,45 @@ function togglePause() {
   isPaused.value = !isPaused.value;
 }
 
+function incStart() {
+  
+  manualStartOffset.value++;
+  let key = getSheetKey(baseHeader.value);
+  let input = new Input(baseBody.value);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  score.transpose(1);
+  let acc = lodash.cloneDeep(score);
+  userText.value = baseHeader.value + "\n" + acc.generate();
+  renderScore();
+}
+
+function decStart() {
+  manualStartOffset.value--;
+  let key = getSheetKey(baseHeader.value);
+  let input = new Input(baseBody.value);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  score.transpose(-1);
+  let acc = lodash.cloneDeep(score);
+  userText.value = baseHeader.value + "\n" + acc.generate();
+  renderScore();
+}
+
+function incAscending() {
+  manualAscendingOffset.value++;
+}
+
+function decAscending() {
+  manualAscendingOffset.value = Math.max(0, manualAscendingOffset.value - 1);
+}
+
+function incDescending() {
+  manualDescendingOffset.value++;
+}
+
+function decDescending() {
+  manualDescendingOffset.value = Math.max(0, manualDescendingOffset.value - 1);
+}
+
 </script>
 
 <template>
@@ -531,6 +579,32 @@ function togglePause() {
   <div id="score-container">
     <div id="target"></div>
     <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
+  </div>
+</div>
+
+<div class="form-section">
+   <label class="form-label" for="manual-mode">Manual Mode</label>
+  <div class="manual-mode">
+    <div>
+      Start:
+      <button class="action-button" @click="decStart">−</button>
+      {{ manualStartOffset }}
+      <button class="action-button" @click="incStart">+</button>
+    </div>
+
+    <div>
+      Ascending:
+      <button class="action-button" @click="decAscending">−</button>
+      {{ manualAscendingOffset }}
+      <button class="action-button" @click="incAscending">+</button>
+    </div>
+
+    <div>
+      Descending:
+      <button class="action-button" @click="decDescending">−</button>
+      {{ manualDescendingOffset }}
+      <button class="action-button" @click="incDescending">+</button>
+    </div>
   </div>
 </div>
 
