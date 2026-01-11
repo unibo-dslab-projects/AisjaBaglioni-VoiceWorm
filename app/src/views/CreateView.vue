@@ -24,7 +24,7 @@ const client = axios.create({
 //Nome dell'esercizio
 const exerciseName = ref("Choose a significant name");
 //Testo scritto dall'utente
-const userText = ref("X:1\nK:C\n|[ceg]z2cdcd|\n");
+const userText = ref("X:1\nK:C\nT:Aisja\nL:1/4\nM:4/4\n|[ceg]z2cdcd|");
 //Testo renderizzato da abc
 const renderedText = ref(null);
 //Synth controller
@@ -158,7 +158,7 @@ async function renderScore() {
 
 // Reset dello spartito
 function resetToDefault() {
-  userText.value = "X:1\nK:C\n|[ceg]z2cdcd|\n";
+  userText.value = "X:1\nK:C\nT:Aisja\nL:1/4\nM:4/4\n|[ceg]z2cdcd|";
   renderScore();
 }
 
@@ -351,19 +351,33 @@ function splitAbcHeaderBody(abcString) {
   const lines = abcString.split("\n");
   const header = [];
   const body = [];
-
   let isBody = false;
-  for (let line of lines) {
-    if (line.startsWith("K:")) {
-      header.push(line);
-      isBody = true;
-    } else if (!isBody) {
-      header.push(line);
-    } else {
+  const fieldRegex = /^[A-Za-z]:/;
+
+for (let line of lines) {
+    const trimmedLine = line.trim();
+
+    if (isBody) {
       body.push(line);
+    } else {
+      const isHeaderLine = 
+        fieldRegex.test(trimmedLine) || 
+        trimmedLine.startsWith('%') || 
+        trimmedLine === '';
+
+      if (isHeaderLine) {
+        header.push(line);
+      } else {
+        isBody = true;
+        body.push(line);
+      }
     }
   }
-  return { header: header.join("\n"), body: body.join("\n") };
+
+  return { 
+    header: header.join("\n").trim(), 
+    body: body.join("\n").trim() 
+  };
 }
 
 //Ottiene la chiave dall'header
