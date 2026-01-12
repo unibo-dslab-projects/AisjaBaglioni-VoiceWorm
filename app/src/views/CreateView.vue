@@ -80,16 +80,26 @@ const groupedTags = computed(() => {
 let timer = null; 
 
 //Trasposizione manuale
+const originalBarCount = computed(() => countOriginalBars());
 const manualStartOffset = ref(0);
 const manualAscendingOffset = ref(0);
 const manualDescendingOffset = ref(0);
-const baseHeader = computed(() => splitAbcHeaderBody(userText.value).header);
-const baseBody   = computed(() => splitAbcHeaderBody(userText.value).body);
+const baseHeader = ref("");
+const baseBody   = ref("");
 
 
 //Messaggio di errore
 const message = ref('');
 
+function countOriginalBars() {
+  const { body } = splitAbcHeaderBody(baseBody.value);
+
+  if (!body) return 0;
+
+  const bars = body.split("|").filter(b => b.trim() !== "");
+
+  return bars.length;
+}
 
 // Funzione per inviare l'esercizio al backend
 async function submitExercise() {
@@ -133,7 +143,7 @@ async function fetchTags() {
  }
 
 onMounted(() => {
-    renderScore();
+    defineBase();
     logTags();
 });
 
@@ -488,13 +498,45 @@ function togglePause() {
   isPaused.value = !isPaused.value;
 }
 
-function incStart() {
+function getLastBar() {
+  const { header, body } = splitAbcHeaderBody(userText.value);
+
+  if (!body) return null;
   
+  const bars = body.split("|")
+                   .map(b => b.trim())
+                   .filter(b => b !== "");
+
+  if (bars.length === 0) return null;
+  const count = parseInt(originalBarCount.value);
+  const lastBars = "|"+bars.slice(-count)+"|";
+  
+  return lastBars;
+}
+
+function removeLastBar() {
+  const { header, body } = splitAbcHeaderBody(userText.value);
+
+  if (!body) return body;
+
+  const bars = body.split("|").filter(b => b.trim() !== "");
+
+  if (bars.length <= originalBarCount.value) return;
+
+  const newBars = bars.slice(0, bars.length - 1);
+
+  const newBody = "|" + newBars.map(b => b.trim()).join("|") + "|";
+
+  userText.value = header + "\n" + newBody;
+}
+
+
+function incStart() {
   manualStartOffset.value++;
   let key = getSheetKey(baseHeader.value);
   let input = new Input(baseBody.value);
   let score = Score.parse(input, KEYS[key.toUpperCase()]);
-  score.transpose(1);
+  score.transpose(1, KEYS[key.toUpperCase()]);
   let acc = lodash.cloneDeep(score);
   userText.value = baseHeader.value + "\n" + acc.generate();
   renderScore();
@@ -505,18 +547,31 @@ function decStart() {
   let key = getSheetKey(baseHeader.value);
   let input = new Input(baseBody.value);
   let score = Score.parse(input, KEYS[key.toUpperCase()]);
-  score.transpose(-1);
+  score.transpose(-1, KEYS[key.toUpperCase()]);
   let acc = lodash.cloneDeep(score);
   userText.value = baseHeader.value + "\n" + acc.generate();
   renderScore();
 }
 
 function incAscending() {
+  const actualBody = splitAbcHeaderBody(userText.value).body;
   manualAscendingOffset.value++;
+  let key = getSheetKey(baseHeader.value);
+  let input = new Input(actualBody);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  let acc = lodash.cloneDeep(score);
+  let lastbar = new Input(getLastBar());
+  let newbar = Score.parse(lastbar, KEYS[key.toUpperCase()]);
+  newbar.transpose(1, KEYS[key.toUpperCase()])
+  acc.extend(newbar);
+  userText.value = baseHeader.value + "\n" + acc.generate();
+  renderScore();
 }
 
 function decAscending() {
   manualAscendingOffset.value = Math.max(0, manualAscendingOffset.value - 1);
+  removeLastBar();
+  renderScore();
 }
 
 function incDescending() {
@@ -525,6 +580,12 @@ function incDescending() {
 
 function decDescending() {
   manualDescendingOffset.value = Math.max(0, manualDescendingOffset.value - 1);
+}
+
+function defineBase() {
+  baseHeader.value = splitAbcHeaderBody(userText.value).header;
+  baseBody.value = splitAbcHeaderBody(userText.value).body;
+  renderScore();
 }
 
 </script>
@@ -563,7 +624,7 @@ function decDescending() {
         ></textarea>
 
         <div class="enter-buttons">
-          <button type="button" class="action-button" @click="renderScore">Enter</button>
+          <button type="button" class="action-button" @click="defineBase">Enter</button>
           <button type="button" @click="play" class="action-button">Play</button>
           <button :disabled="!isPlaying" @click="togglePause" class="action-button">
             {{ isPaused ? 'Resume' : 'Pause' }}
