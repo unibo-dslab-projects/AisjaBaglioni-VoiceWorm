@@ -706,7 +706,7 @@ function defineBase() {
 </div>
 
 <div id="manual-section" class="form-section">
-  <button class="manual-button" @click="toggleManualMode">
+  <button class="manual-button" :class="{ 'active-mode': !showManualMode }"@click="toggleManualMode">
     Manual Mode
   </button>
   <div v-if="showManualMode" class="manual-mode">
@@ -735,7 +735,7 @@ function defineBase() {
 
 
 <div id="automatic-section" class="form-section">
-  <button class="automatic-button" @click="toggleAutomaticMode">
+  <button class="automatic-button" :class="{ 'active-mode': !showAutomaticMode }"@click="toggleAutomaticMode">
     Automatic Mode
   </button>
   <div v-if="showAutomaticMode" class="form-section" id="automatic-mode">

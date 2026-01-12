@@ -598,6 +598,16 @@ tbody tr:nth-child(even) {
   transition: 0.2s;
 }
 
+.automatic-button.active-mode {
+  background-color: #5a5a5a; 
+  color: #ffffff; 
+}
+
+.manual-button.active-mode {
+  background-color: #5a5a5a; 
+  color: #ffffff; 
+}
+
 .manual-mode {
   display: flex;
   flex-direction: column;
@@ -619,6 +629,7 @@ tbody tr:nth-child(even) {
   font-weight: 500;
   transition: 0.2s;
 }
+
 
 .manual-mode > div {
   display: grid;
