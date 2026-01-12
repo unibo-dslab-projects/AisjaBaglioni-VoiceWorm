@@ -87,6 +87,9 @@ const manualDescendingOffset = ref(0);
 const baseHeader = ref("");
 const baseBody   = ref("");
 
+//Gestione delle sezioni
+const showManualMode = ref(false);
+const showAutomaticMode = ref(false);
 
 //Messaggio di errore
 const message = ref('');
@@ -103,6 +106,17 @@ function countOriginalBars() {
 
   return bars.length;
 }
+
+function toggleManualMode() {
+  showManualMode.value = !showManualMode.value;
+  if (showManualMode.value) showAutomaticMode.value = false;
+}
+
+function toggleAutomaticMode() {
+  showAutomaticMode.value = !showAutomaticMode.value;
+  if (showAutomaticMode.value) showManualMode.value = false;
+}
+
 
 // Funzione per inviare l'esercizio al backend
 async function submitExercise() {
@@ -650,11 +664,38 @@ function defineBase() {
           <button :disabled="!isPlaying" @click="togglePause" class="action-button">
             {{ isPaused ? 'Resume' : 'Pause' }}
           </button>
+          <button type="button" @click="resetToDefault" class="action-button">Reset</button>
           <button type="button" @click="downloadWav" class="action-button">Save WAV</button>
           <button type="button" @click="downloadSvg" class="action-button">Save SVG</button>
         </div>
       </div>
 
+
+  <div class="form-section">
+  <label class="form-label" for="bpm-control">Tempo</label>
+
+  <div id="bpm-control" class="bpm-control">
+    <label for="bpm">BPM: </label>
+    <input
+      class="bpm form-input"
+      type="number"
+      v-model.number="bpm"
+      min="1"
+      max="300"
+      step="1"
+      @input="bpm = Math.floor(bpm)"
+    />
+    
+    <input
+      type="range"
+      v-model.number="bpm"
+      min="1"
+      max="300"
+      step="1"
+      class="range-input"
+    />
+  </div>
+</div>
 
   <div class="form-section" id="renderedscore">
   <label class="form-label" for="renderedscore">Rendered Score</label>
@@ -664,9 +705,11 @@ function defineBase() {
   </div>
 </div>
 
-<div class="form-section">
-   <label class="form-label" for="manual-mode">Manual Mode</label>
-  <div class="manual-mode">
+<div id="manual-section" class="form-section">
+  <button class="manual-button" @click="toggleManualMode">
+    Manual Mode
+  </button>
+  <div v-if="showManualMode" class="manual-mode">
     <div>
       Start:
       <button class="action-button" @click="decStart">−</button>
@@ -690,30 +733,13 @@ function defineBase() {
   </div>
 </div>
 
-  <div class="form-section">
-  <label class="form-label" for="bpm-control">Tempo and Steps</label>
 
-  <div id="bpm-control" class="bpm-control">
-    <label for="bpm">BPM: </label>
-    <input
-      class="bpm form-input"
-      type="number"
-      v-model.number="bpm"
-      min="1"
-      max="300"
-      step="1"
-      @input="bpm = Math.floor(bpm)"
-    />
-    <input
-      type="range"
-      v-model.number="bpm"
-      min="1"
-      max="300"
-      step="1"
-      class="range-input"
-    />
-  </div>
-
+<div id="automatic-section" class="form-section">
+  <button class="automatic-button" @click="toggleAutomaticMode">
+    Automatic Mode
+  </button>
+  <div v-if="showAutomaticMode" class="form-section" id="automatic-mode">
+  <label class="form-label" for="step-control">Steps</label>
   <div id="step-control" class="step-control">
     <div class="step-group">
       <label for="ascending_steps">Ascending steps:</label>
@@ -729,7 +755,6 @@ function defineBase() {
       </select>
     </div>
   </div>
-</div>
 
 <div class="form-section">
   <label class="form-label" for="note-group">Transposition Range</label>
@@ -817,18 +842,10 @@ function defineBase() {
       <option value="7">7</option>
     </select>
   </div>
+  <button type="button" @click="transposeAndRender" class="action-button">Generate</button>
 </div>
-
-
-<div class="form-section">
-  <label class="form-label">Actions</label>
-  <div class="action-buttons">
-    <button type="button" @click="transposeAndRender" class="action-button">Generate</button>
-    <button type="button" @click="resetToDefault" class="action-button">Reset</button>
-  </div>
 </div>
-
-
+</div>
 
 
 <div class="form-section">

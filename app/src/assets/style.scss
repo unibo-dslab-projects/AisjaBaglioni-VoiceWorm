@@ -17,6 +17,8 @@ body[data-theme="light"] {
   --score-bg: #ffffff;
   --score-text: black;
   --danger-text: #681f17;
+  --manual-color: rgb(255, 79, 229);
+  --automatic-color: rgb(35, 156, 255);
 }
 
 body[data-theme="dark"] {
@@ -37,6 +39,8 @@ body[data-theme="dark"] {
   --score-bg: #d5d5ff;
   --score-text: rgb(31, 0, 109);
   --danger-text: #ff1900;
+  --manual-color: rgb(214, 66, 192);
+  --automatic-color: rgb(34, 129, 208);
 }
 
 body[data-theme="dark"] button.dark-toggle {
@@ -583,17 +587,39 @@ tbody tr:nth-child(even) {
   font-size: 0.9rem;
 }
 
+.manual-button {
+  background-color: var(--manual-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
 .manual-mode {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
   border-radius: 12px;
-  background-color: var(--card-bg, #f7f7fb);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: var(--bg-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+  color: var(--text-color);
 }
 
-/* Riga singola */
+.automatic-button {
+  background-color: var(--automatic-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
 .manual-mode > div {
   display: grid;
   grid-template-columns: 1fr auto auto auto;
@@ -602,12 +628,10 @@ tbody tr:nth-child(even) {
   font-size: 0.95rem;
 }
 
-/* Label (Start / Ascending / Descending) */
 .manual-mode > div::first-letter {
   font-weight: 600;
 }
 
-/* Valore numerico */
 .manual-mode span,
 .manual-mode div > :nth-child(3) {
   min-width: 24px;
