@@ -29,7 +29,7 @@ body[data-theme="dark"] {
   --header-bg: linear-gradient(90deg, #2b2d42, #3a3f55, #4b4a7a);
   --footer-bg: linear-gradient(90deg, #4b4a7a, #3a3f55, #2b2d42);
   --pagination-bg: #1e1e2f;
-  --disabled-bg: #a8a8a8;
+  --disabled-bg: #777777;
   --table-color: #a1a8ff;
   --table-row-odd: #1e1e2f;
   --table-row-even: #2f2f4a;
@@ -494,6 +494,7 @@ tbody tr:nth-child(even) {
   cursor: pointer;
   font-weight: 500;
   transition: 0.2s;
+  flex: 1;
 }
 
 .action-button:disabled {
@@ -599,12 +600,12 @@ tbody tr:nth-child(even) {
 }
 
 .automatic-button.active-mode {
-  background-color: #5a5a5a; 
+  background-color: var(--disabled-bg); 
   color: #ffffff; 
 }
 
 .manual-button.active-mode {
-  background-color: #5a5a5a; 
+  background-color: var(--disabled-bg); 
   color: #ffffff; 
 }
 
@@ -619,6 +620,32 @@ tbody tr:nth-child(even) {
   color: var(--text-color);
 }
 
+.manual-mode > div {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;       
+  width: 100%;
+}
+
+.moreless {
+  display: flex;
+  flex-direction: row;
+  align-items: center;   
+  justify-content: space-between;
+}
+
+.nextsteps {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.nextsteps button {
+  padding: 8px 16px;
+  width: auto; 
+}
+
 .automatic-button {
   background-color: var(--automatic-color);
   color: white;
@@ -630,23 +657,29 @@ tbody tr:nth-child(even) {
   transition: 0.2s;
 }
 
-
-.manual-mode > div {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.95rem;
+.danger-buttons {
+  display: flex;
+  gap: 12px;       
+  flex-wrap: wrap; 
+  margin-top: 10px;
 }
 
-.manual-mode > div::first-letter {
-  font-weight: 600;
+.danger-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
 }
 
-.manual-mode span,
-.manual-mode div > :nth-child(3) {
-  min-width: 24px;
-  text-align: center;
-  font-weight: 600;
-  color: var(--accent-color, #6c63ff);
+.danger-button:hover {
+  background-color: #c0392b; 
+}
+
+.modify-message, .delete-message {
+  color: var(--text-color);
+  padding-top: 3px;
 }

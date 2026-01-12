@@ -90,6 +90,7 @@ const baseBody   = ref("");
 //Gestione delle sezioni
 const showManualMode = ref(false);
 const showAutomaticMode = ref(false);
+const manualStep = ref(0); 
 
 //Messaggio di errore
 const message = ref('');
@@ -115,6 +116,14 @@ function toggleManualMode() {
 function toggleAutomaticMode() {
   showAutomaticMode.value = !showAutomaticMode.value;
   if (showAutomaticMode.value) showManualMode.value = false;
+}
+
+function finishManualStep() {
+  manualStep.value = 0;
+  manualStartOffset.value = 0;
+  manualAscendingOffset.value = 0;
+  manualDescendingOffset.value = 0;
+  defineBase();
 }
 
 
@@ -198,7 +207,19 @@ async function renderScore() {
 // Reset dello spartito
 function resetToDefault() {
   userText.value = "X:1\nK:C\nT:Aisja\nL:1/4\nM:4/4\n|[ceg]z2cdcd|";
+  manualStep.value = 0;
+  manualStartOffset.value = 0;
+  manualAscendingOffset.value = 0;
+  manualDescendingOffset.value = 0;
   renderScore();
+}
+
+function resetToLastSaved() {
+  userText.value = baseHeader.value+"\n"+baseBody.value;
+  manualStep.value = 0;
+  manualStartOffset.value = 0;
+  manualAscendingOffset.value = 0;
+  manualDescendingOffset.value = 0;
 }
 
 // Funzione che ferma il synth e il timer, e resetta la scrollbar
@@ -529,7 +550,7 @@ function getLastBar() {
 
   if (bars.length === 0) return null;
   const count = parseInt(originalBarCount.value);
-  const lastBars = "|"+bars.slice(-count)+"|";
+  const lastBars = "|"+bars.slice(-count).join("|")+"|";
   
   return lastBars;
 }
@@ -664,9 +685,9 @@ function defineBase() {
           <button :disabled="!isPlaying" @click="togglePause" class="action-button">
             {{ isPaused ? 'Resume' : 'Pause' }}
           </button>
-          <button type="button" @click="resetToDefault" class="action-button">Reset</button>
           <button type="button" @click="downloadWav" class="action-button">Save WAV</button>
           <button type="button" @click="downloadSvg" class="action-button">Save SVG</button>
+          <button type="button" @click="resetToDefault" class="action-button danger-button">Restart</button>
         </div>
       </div>
 
@@ -709,28 +730,55 @@ function defineBase() {
   <button class="manual-button" :class="{ 'active-mode': !showManualMode }"@click="toggleManualMode">
     Manual Mode
   </button>
+
   <div v-if="showManualMode" class="manual-mode">
-    <div>
-      Start:
-      <button class="action-button" @click="decStart">−</button>
-      {{ manualStartOffset }}
-      <button class="action-button" @click="incStart">+</button>
+  <div v-show="manualStep === 0" class="manual-row">
+    <div class="moreless">
+    <p>Start:</p>
+    <div class="controls-wrapper">
+    <button class="action-button" @click="decStart">−</button>
+    {{ manualStartOffset }}
+    <button class="action-button" @click="incStart">+</button>
     </div>
-
-    <div>
-      Ascending:
-      <button class="action-button" @click="decAscending">−</button>
-      {{ manualAscendingOffset }}
-      <button class="action-button" @click="incAscending">+</button>
     </div>
-
-    <div>
-      Descending:
-      <button class="action-button" @click="decDescending">−</button>
-      {{ manualDescendingOffset }}
-      <button class="action-button" @click="incDescending">+</button>
+    <div class="nextsteps">
+    <button class="action-button danger-button" @click="resetToLastSaved">Reset</button>
+    <button class="action-button" @click="manualStep++">Next →</button>
     </div>
   </div>
+
+
+  <div v-show="manualStep === 1" class="manual-row">
+    <div class="moreless">
+    <p>Ascending:</p>
+    <div class="controls-wrapper">
+    <button class="action-button" @click="decAscending">−</button>
+    {{ manualAscendingOffset }}
+    <button class="action-button" @click="incAscending">+</button>
+    </div>
+    </div>
+    <div class="nextsteps">
+    <button class="action-button danger-button" @click="resetToLastSaved">Reset</button>
+    <button class="action-button" @click="manualStep++">Next →</button>
+    </div>
+  </div>
+
+
+  <div v-show="manualStep === 2" class="manual-row">
+    <div class="moreless">
+    <p>Descending:</p>
+     <div class="controls-wrapper">
+    <button class="action-button" @click="decDescending">−</button>
+    {{ manualDescendingOffset }}
+    <button class="action-button" @click="incDescending">+</button>
+    </div>
+    </div>
+    <div class="nextsteps">
+    <button class="action-button danger-button" @click="resetToLastSaved">Reset</button>
+    <button class="action-button" @click="finishManualStep">Finish</button>
+    </div>
+  </div>
+</div>
 </div>
 
 
@@ -842,7 +890,10 @@ function defineBase() {
       <option value="7">7</option>
     </select>
   </div>
+  <div class="action-buttons">
   <button type="button" @click="transposeAndRender" class="action-button">Generate</button>
+  <button type="button" @click="resetToDefault" class="action-button danger-button">Restart</button>
+  </div>
 </div>
 </div>
 </div>

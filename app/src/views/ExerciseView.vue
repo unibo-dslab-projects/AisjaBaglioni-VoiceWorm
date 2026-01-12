@@ -887,30 +887,4 @@ function togglePause() {
   color: var(--danger-text);
 }
 
-.danger-buttons {
-  display: flex;
-  gap: 12px;       
-  flex-wrap: wrap; 
-  margin-top: 10px;
-}
-
-.danger-button {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.2s;
-}
-
-.danger-button:hover {
-  background-color: #c0392b; 
-}
-
-.modify-message, .delete-message {
-  color: var(--text-color);
-  padding-top: 3px;
-}
 </style>
