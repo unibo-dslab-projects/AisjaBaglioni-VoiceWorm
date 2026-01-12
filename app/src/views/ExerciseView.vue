@@ -131,6 +131,50 @@ const groupedTags = computed(() => {
 //Timer del synth, da resettare a ogni nuovo play
 let timer = null; 
 
+//Trasposizione manuale
+const originalBarCount = computed(() => countOriginalBars());
+const manualStartOffset = ref(0);
+const manualAscendingOffset = ref(0);
+const manualDescendingOffset = ref(0);
+const baseHeader = ref("");
+const baseBody   = ref("");
+
+//Gestione delle sezioni
+const showManualMode = ref(false);
+const showAutomaticMode = ref(false);
+const manualStep = ref(0); 
+
+//Attesa per aggiornamento
+const debouncedRender = lodash.debounce(renderScore, 250);
+
+function countOriginalBars() {
+  const { body } = splitAbcHeaderBody(baseBody.value);
+
+  if (!body) return 0;
+
+  const bars = body.split("|").filter(b => b.trim() !== "");
+
+  return bars.length;
+}
+
+function toggleManualMode() {
+  showManualMode.value = !showManualMode.value;
+  if (showManualMode.value) showAutomaticMode.value = false;
+}
+
+function toggleAutomaticMode() {
+  showAutomaticMode.value = !showAutomaticMode.value;
+  if (showAutomaticMode.value) showManualMode.value = false;
+}
+
+function finishManualStep() {
+  manualStep.value = 0;
+  manualStartOffset.value = 0;
+  manualAscendingOffset.value = 0;
+  manualDescendingOffset.value = 0;
+  defineBase();
+}
+
 // Funzione per ottenere i tag dal backend
 async function fetchTags() {
   try {
@@ -578,6 +622,111 @@ function togglePause() {
   isPaused.value = !isPaused.value;
 }
 
+function getLastBar() {
+  const { header, body } = splitAbcHeaderBody(userText.value);
+
+  if (!body) return null;
+  
+  const bars = body.split("|")
+                   .map(b => b.trim())
+                   .filter(b => b !== "");
+
+  if (bars.length === 0) return null;
+  const count = parseInt(originalBarCount.value);
+  const lastBars = "|"+bars.slice(-count).join("|")+"|";
+  
+  return lastBars;
+}
+
+function removeLastBar() {
+  const { header, body } = splitAbcHeaderBody(userText.value);
+
+  if (!body) return body;
+
+  const bars = body.split("|").filter(b => b.trim() !== "");
+
+  if (bars.length <= originalBarCount.value) return;
+
+  const newBars = bars.slice(0, bars.length - 1);
+
+  const newBody = "|" + newBars.map(b => b.trim()).join("|") + "|";
+
+  userText.value = header + "\n" + newBody;
+}
+
+
+function incStart() {
+  const actualBody = splitAbcHeaderBody(userText.value).body;
+  manualStartOffset.value++;
+  let key = getSheetKey(baseHeader.value);
+  let input = new Input(actualBody);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  console.log(score);
+  score.transpose(1, KEYS[key.toUpperCase()]);
+  let acc = lodash.cloneDeep(score);
+  userText.value = baseHeader.value + "\n" + acc.generate();
+  renderScore();
+}
+
+function decStart() {
+  const actualBody = splitAbcHeaderBody(userText.value).body;
+  manualStartOffset.value--;
+  let key = getSheetKey(baseHeader.value);
+  let input = new Input(actualBody);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  score.transpose(-1, KEYS[key.toUpperCase()]);
+  let acc = lodash.cloneDeep(score);
+  userText.value = baseHeader.value + "\n" + acc.generate();
+  renderScore();
+}
+
+function incAscending() {
+  const actualBody = splitAbcHeaderBody(userText.value).body;
+  manualAscendingOffset.value++;
+  let key = getSheetKey(baseHeader.value);
+  let input = new Input(actualBody);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  let acc = lodash.cloneDeep(score);
+  let lastbar = new Input(getLastBar());
+  let newbar = Score.parse(lastbar, KEYS[key.toUpperCase()]);
+  newbar.transpose(1, KEYS[key.toUpperCase()])
+  acc.extend(newbar);
+  userText.value = baseHeader.value + "\n" + acc.generate();
+  renderScore();
+}
+
+function decAscending() {
+  manualAscendingOffset.value = Math.max(0, manualAscendingOffset.value - 1);
+  removeLastBar();
+  renderScore();
+}
+
+function incDescending() {
+  manualDescendingOffset.value++;
+  const actualBody = splitAbcHeaderBody(userText.value).body;
+  let key = getSheetKey(baseHeader.value);
+  let input = new Input(actualBody);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  let acc = lodash.cloneDeep(score);
+  let lastbar = new Input(getLastBar());
+  let newbar = Score.parse(lastbar, KEYS[key.toUpperCase()]);
+  newbar.transpose(-1, KEYS[key.toUpperCase()])
+  acc.extend(newbar);
+  userText.value = baseHeader.value + "\n" + acc.generate();
+  renderScore();
+}
+
+function decDescending() {
+  manualDescendingOffset.value = Math.max(0, manualDescendingOffset.value - 1);
+  removeLastBar();
+  renderScore();
+}
+
+function defineBase() {
+  baseHeader.value = splitAbcHeaderBody(userText.value).header;
+  baseBody.value = splitAbcHeaderBody(userText.value).body;
+  renderScore();
+}
 
 </script>
 
@@ -615,27 +764,18 @@ function togglePause() {
         ></textarea>
 
         <div class="enter-buttons">
-          <button type="button" class="action-button" @click="renderScore">Enter</button>
           <button type="button" @click="play" class="action-button">Play</button>
           <button :disabled="!isPlaying" @click="togglePause" class="action-button">
             {{ isPaused ? 'Resume' : 'Pause' }}
           </button>
           <button type="button" @click="downloadWav" class="action-button">Save WAV</button>
           <button type="button" @click="downloadSvg" class="action-button">Save SVG</button>
+          <button type="button" @click="resetToDefault" class="action-button danger-button">Restart</button>
         </div>
       </div>
 
-
-        <div class="form-section">
-        <label class="form-label">Rendered Score</label>
-        <div id="score-container">
-          <div id="target"></div>
-          <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
-        </div>
-      </div>
-
-        <div class="form-section">
-  <label class="form-label">Tempo and Steps</label>
+<div class="form-section">
+  <label class="form-label" for="bpm-control">Tempo</label>
 
   <div id="bpm-control" class="bpm-control">
     <label for="bpm">BPM: </label>
@@ -648,6 +788,7 @@ function togglePause() {
       step="1"
       @input="bpm = Math.floor(bpm)"
     />
+    
     <input
       type="range"
       v-model.number="bpm"
@@ -657,7 +798,78 @@ function togglePause() {
       class="range-input"
     />
   </div>
+</div>
 
+        <div class="form-section">
+        <label class="form-label">Rendered Score</label>
+        <div id="score-container">
+          <div id="target"></div>
+          <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
+        </div>
+      </div>
+
+ <div id="manual-section" class="form-section">
+  <button class="manual-button" :class="{ 'active-mode': !showManualMode }"@click="toggleManualMode">
+    Manual Mode
+  </button>
+
+  <div v-if="showManualMode" class="manual-mode">
+  <div v-show="manualStep === 0" class="manual-row">
+    <div class="moreless">
+    <p>Start:</p>
+    <div class="controls-wrapper">
+    <button class="action-button" @click="decStart">−</button>
+    {{ manualStartOffset }}
+    <button class="action-button" @click="incStart">+</button>
+    </div>
+    </div>
+    <div class="nextsteps">
+    <button class="action-button danger-button" @click="resetToLastSaved">Reset</button>
+    <button class="action-button" @click="manualStep++">Next →</button>
+    </div>
+  </div>
+
+
+  <div v-show="manualStep === 1" class="manual-row">
+    <div class="moreless">
+    <p>Ascending:</p>
+    <div class="controls-wrapper">
+    <button class="action-button" @click="decAscending">−</button>
+    {{ manualAscendingOffset }}
+    <button class="action-button" @click="incAscending">+</button>
+    </div>
+    </div>
+    <div class="nextsteps">
+    <button class="action-button danger-button" @click="resetToLastSaved">Reset</button>
+    <button class="action-button" @click="manualStep++">Next →</button>
+    </div>
+  </div>
+
+
+  <div v-show="manualStep === 2" class="manual-row">
+    <div class="moreless">
+    <p>Descending:</p>
+     <div class="controls-wrapper">
+    <button class="action-button" @click="decDescending">−</button>
+    {{ manualDescendingOffset }}
+    <button class="action-button" @click="incDescending">+</button>
+    </div>
+    </div>
+    <div class="nextsteps">
+    <button class="action-button danger-button" @click="resetToLastSaved">Reset</button>
+    <button class="action-button" @click="finishManualStep">Finish</button>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<div id="automatic-section" class="form-section">
+  <button class="automatic-button" :class="{ 'active-mode': !showAutomaticMode }"@click="toggleAutomaticMode">
+    Automatic Mode
+  </button>
+  <div v-if="showAutomaticMode" class="form-section" id="automatic-mode">
+  <label class="form-label" for="step-control">Steps</label>
   <div id="step-control" class="step-control">
     <div class="step-group">
       <label for="ascending_steps">Ascending steps:</label>
@@ -673,10 +885,9 @@ function togglePause() {
       </select>
     </div>
   </div>
-</div>
 
 <div class="form-section">
-  <label class="form-label">Transposition Range</label>
+  <label class="form-label" for="note-group">Transposition Range</label>
 
   <div class="note-group">
     <label class="note-label" for="starting_note">Starting note:</label>
@@ -761,16 +972,14 @@ function togglePause() {
       <option value="7">7</option>
     </select>
   </div>
-</div>
-
-
-<div class="form-section">
-  <label class="form-label">Actions</label>
   <div class="action-buttons">
-    <button type="button" @click="transposeAndRender" class="action-button">Generate</button>
-    <button type="button" @click="resetToDefault" class="action-button">Reset</button>
+  <button type="button" @click="transposeAndRender" class="action-button">Generate</button>
+  <button type="button" @click="resetToDefault" class="action-button danger-button">Restart</button>
   </div>
 </div>
+</div>
+</div>
+
 <div class="form-section">
   <label class="form-label">Tags</label>
 
@@ -807,7 +1016,7 @@ function togglePause() {
   <div v-if="is_favorite">
     <p>This exercise is in your favorites.</p>
     <div class="action-buttons">
-      <button class="danger-button" @click="removeFromFavorites">Remove from Favorites</button>
+      <button class="action-button danger-button" @click="removeFromFavorites">Remove from Favorites</button>
     </div>
   </div>
 
