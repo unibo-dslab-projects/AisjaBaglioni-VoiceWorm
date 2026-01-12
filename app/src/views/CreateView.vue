@@ -650,7 +650,9 @@ function defineBase() {
 <template>
     <Header/>
     <div class="page">
-    <div class="page-title">
+      <div class="content-wrapper">
+      <div class="form-container">
+      <div class="page-title">
       <h1>Create a new exercise</h1>
       <div class="title-underline"></div>
     </div>
@@ -718,14 +720,7 @@ function defineBase() {
   </div>
 </div>
 
-  <div class="form-section" id="renderedscore">
-  <label class="form-label" for="renderedscore">Rendered Score</label>
-  <div id="score-container">
-    <div id="target"></div>
-    <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
-  </div>
-</div>
-
+<div class="modes-container">
 <div id="manual-section" class="form-section">
   <button class="manual-button" :class="{ 'active-mode': !showManualMode }"@click="toggleManualMode">
     Manual Mode
@@ -897,7 +892,7 @@ function defineBase() {
 </div>
 </div>
 </div>
-
+</div>
 
 <div class="form-section">
   <label class="form-label">Tags</label>
@@ -941,8 +936,21 @@ function defineBase() {
       <div v-if="message" class="status-message">{{ message }}</div>
       </div>
     </div>
+    </div>
 
+
+    <div class="preview-container">
+    <div class="form-section" id="renderedscore">
+  <label class="form-label" for="renderedscore">Rendered Score</label>
+  <div id="score-container">
+    <div id="target"></div>
+    <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>
+  </div>
+</div>
+    </div>
     </div> 
+
+    </div>
     <Footer/>
 </template>
 

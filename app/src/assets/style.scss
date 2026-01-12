@@ -349,12 +349,39 @@ tbody tr:nth-child(even) {
 
 // Exercise
 
+.content-wrapper {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.form-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-container {
+  flex: 1; 
+  position: sticky;
+  z-index: 100;
+  flex: 0 0 250px;
+  top: 150px;
+}
+
+.modes-toggle-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
 .form-section {
   display: flex;
   flex-direction: column;
   gap: 6px;
   width: 100%;
   max-width: 800px;
+  margin: 20px;
 }
 
 .form-input {
@@ -479,7 +506,7 @@ tbody tr:nth-child(even) {
 }
 
 .enter-buttons, .action-buttons {
-  margin-top: 10px;
+  margin: 10px;
   display: flex;
   gap: 8px;
   flex-wrap: wrap; 
