@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useCredentials } from '@/stores/credentials';
 import { useRouter } from 'vue-router';
 import abcjs from "abcjs";
@@ -91,6 +91,9 @@ const baseBody   = ref("");
 //Messaggio di errore
 const message = ref('');
 
+//Attesa per aggiornamento
+const debouncedRender = lodash.debounce(renderScore, 250);
+
 function countOriginalBars() {
   const { body } = splitAbcHeaderBody(baseBody.value);
 
@@ -147,6 +150,9 @@ onMounted(() => {
     logTags();
 });
 
+watch(userText, () => {
+  debouncedRender();
+});
 
 // Renderizza lo spartito all'avvio o quando richiesto
 async function renderScore() {
@@ -532,10 +538,12 @@ function removeLastBar() {
 
 
 function incStart() {
+  const actualBody = splitAbcHeaderBody(userText.value).body;
   manualStartOffset.value++;
   let key = getSheetKey(baseHeader.value);
-  let input = new Input(baseBody.value);
+  let input = new Input(actualBody);
   let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  console.log(score);
   score.transpose(1, KEYS[key.toUpperCase()]);
   let acc = lodash.cloneDeep(score);
   userText.value = baseHeader.value + "\n" + acc.generate();
@@ -543,9 +551,10 @@ function incStart() {
 }
 
 function decStart() {
+  const actualBody = splitAbcHeaderBody(userText.value).body;
   manualStartOffset.value--;
   let key = getSheetKey(baseHeader.value);
-  let input = new Input(baseBody.value);
+  let input = new Input(actualBody);
   let score = Score.parse(input, KEYS[key.toUpperCase()]);
   score.transpose(-1, KEYS[key.toUpperCase()]);
   let acc = lodash.cloneDeep(score);
@@ -576,10 +585,23 @@ function decAscending() {
 
 function incDescending() {
   manualDescendingOffset.value++;
+  const actualBody = splitAbcHeaderBody(userText.value).body;
+  let key = getSheetKey(baseHeader.value);
+  let input = new Input(actualBody);
+  let score = Score.parse(input, KEYS[key.toUpperCase()]);
+  let acc = lodash.cloneDeep(score);
+  let lastbar = new Input(getLastBar());
+  let newbar = Score.parse(lastbar, KEYS[key.toUpperCase()]);
+  newbar.transpose(-1, KEYS[key.toUpperCase()])
+  acc.extend(newbar);
+  userText.value = baseHeader.value + "\n" + acc.generate();
+  renderScore();
 }
 
 function decDescending() {
   manualDescendingOffset.value = Math.max(0, manualDescendingOffset.value - 1);
+  removeLastBar();
+  renderScore();
 }
 
 function defineBase() {
@@ -624,7 +646,6 @@ function defineBase() {
         ></textarea>
 
         <div class="enter-buttons">
-          <button type="button" class="action-button" @click="defineBase">Enter</button>
           <button type="button" @click="play" class="action-button">Play</button>
           <button :disabled="!isPlaying" @click="togglePause" class="action-button">
             {{ isPaused ? 'Resume' : 'Pause' }}
