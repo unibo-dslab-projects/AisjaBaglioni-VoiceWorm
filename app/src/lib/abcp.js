@@ -346,17 +346,21 @@ generate() {
 }
 
 class Chord {
-    constructor(elements, duration) {
+
+    constructor(elements, duration, staccato) {
         this.elements = elements;
         this.duration = duration;
+        this.staccato = staccato;
     }
 
     static hasFirst(char) {
-        return char === "[";
+        return char === "[" || char === "."; 
     }
 
-    static parse(input, alterations) {
-        assert(Chord.hasFirst(input.next()));
+static parse(input, alterations, existingStaccato = null) {
+        let staccato = existingStaccato ?? Staccato.parse(input);
+        
+        assert(input.next() === "[");
         let elements = new Array();
         while (input.peek() !== "]") {
             let el = null;
@@ -369,11 +373,11 @@ class Chord {
         }
         assert(input.next() === "]");
         let duration = Duration.parse(input);
-        return new Chord(elements, duration);
+        return new Chord(elements, duration, staccato);
     }
 
     generate() {
-        let output = "[";
+        let output = this.staccato.generate() + "[";
         for (let el of this.elements) {
             output += el.generate();
         }
