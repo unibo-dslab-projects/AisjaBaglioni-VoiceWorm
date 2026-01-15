@@ -290,34 +290,31 @@ const TONE_EXPLORER = [
 ];
 
 class Note {
-    constructor(pitch, octave, duration, accidental, staccato) {
+    constructor(pitch, octave, duration, accidental) {
         this.pitch = pitch;
         this.octave = octave;
         this.duration = duration;
         this.accidental = accidental;
-        this.staccato = staccato;
         this.data = new Object();
         this.data.tone = this.pitch.toTone() + this.octave.toTone() + this.accidental.toTone();
     }
 
-    static hasFirst(char) {
-        return char === "." || PartialAccidental.hasFirst(char) || Pitch.hasFirst(char);
+    static hasFirst(_char) {
+        return true;
     }
 
-static parse(input, alterations, existingStaccato = null) {
-        let staccato = existingStaccato ?? Staccato.parse(input);
-        
+    static parse(input, alterations) {
         let partial_accidental = PartialAccidental.parse(input);
         assert(Pitch.hasFirst(input.peek()));
         let pitch = Pitch.parse(input);
         let octave = Octave.parse(input);
         let duration = Duration.parse(input);
         let accidental = new Accidental(partial_accidental, pitch.note, alterations);
-        return new Note(pitch, octave, duration, accidental, staccato);
+        return new Note(pitch, octave, duration, accidental);
     }
 
-generate() {
-        return this.staccato.generate() + this.accidental.generate() + this.pitch.generate() + this.octave.generate() + this.duration.generate();
+    generate() {
+        return this.accidental.generate() + this.pitch.generate() + this.octave.generate() + this.duration.generate();
     }
 
     transpose(semitones, alterations) {
@@ -346,21 +343,17 @@ generate() {
 }
 
 class Chord {
-
-    constructor(elements, duration, staccato) {
+    constructor(elements, duration) {
         this.elements = elements;
         this.duration = duration;
-        this.staccato = staccato;
     }
 
     static hasFirst(char) {
-        return char === "[" || char === "."; 
+        return char === "[";
     }
 
-static parse(input, alterations, existingStaccato = null) {
-        let staccato = existingStaccato ?? Staccato.parse(input);
-        
-        assert(input.next() === "[");
+    static parse(input, alterations) {
+        assert(Chord.hasFirst(input.next()));
         let elements = new Array();
         while (input.peek() !== "]") {
             let el = null;
@@ -373,11 +366,11 @@ static parse(input, alterations, existingStaccato = null) {
         }
         assert(input.next() === "]");
         let duration = Duration.parse(input);
-        return new Chord(elements, duration, staccato);
+        return new Chord(elements, duration);
     }
 
     generate() {
-        let output = this.staccato.generate() + "[";
+        let output = "[";
         for (let el of this.elements) {
             output += el.generate();
         }
@@ -504,28 +497,6 @@ const C_MAJOR = {
     "g": 0
 };
 
-class Staccato {
-    constructor(active) {
-        this.active = active;
-    }
-
-    static hasFirst(char) {
-        return char === ".";
-    }
-
-    static parse(input) {
-        if (Staccato.hasFirst(input.peek())) {
-            input.next();
-            return new Staccato(true);
-        }
-        return new Staccato(false);
-    }
-
-    generate() {
-        return this.active ? "." : "";
-    }
-}
-
 class Score {
     constructor(bars, prefix, suffix, alterations) {
         this.bars = bars;
@@ -586,4 +557,4 @@ class Score {
     }
 }
 
-export { Input, Whitespace, Rest, Pitch, Note, Score, Bar, Octave, Accidental, Tuplet, Chord, Staccato };
+export { Input, Whitespace, Rest, Pitch, Note, Score, Bar, Octave, Accidental, Tuplet, Chord };
