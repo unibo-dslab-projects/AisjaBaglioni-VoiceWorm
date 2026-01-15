@@ -456,31 +456,49 @@ function transposeAndRender() {
   let input = new Input(body);
   let score = Score.parse(input, KEYS[key.toUpperCase()]);
 
-  // Trova la prima nota
+  // Trova la prima nota// Trova la prima nota e i limiti (usando il basso come riferimento per gli accordi)
   let first_note = null;
-  let highest_note = 0;
-  let lowest_note = 1000;
-  for(let bar of score.bars) {
-    for(let element of bar.elements) {
-      if(element instanceof Note) {
-        if(first_note === null) {
-          first_note = element.data.tone;
+  let highest_note = -Infinity;
+  let lowest_note = Infinity;
+
+  // Funzione interna per aggiornare i limiti in modo consistente
+  const updateLimits = (tone) => {
+    if (first_note === null) first_note = tone;
+    highest_note = Math.max(highest_note, tone);
+    lowest_note = Math.min(lowest_note, tone);
+  };
+
+  for (let bar of score.bars) {
+    for (let element of bar.elements) {
+      if (element instanceof Note) {
+        updateLimits(element.data.tone);
+      } 
+      else if (element instanceof Chord) {
+        const tones = element.elements
+          .filter(se => se instanceof Note)
+          .map(se => se.data.tone);
+        
+        if (tones.length > 0) {
+          const bassOfChord = Math.min(...tones);
+          updateLimits(bassOfChord);
         }
-        highest_note = Math.max(highest_note, element.data.tone);
-        lowest_note = Math.min(lowest_note, element.data.tone);
-      } else if(element instanceof Tuplet || element instanceof Chord) {
-        for(let se of element.elements) {
-          if(se instanceof Note) {
-            if(first_note === null) {
-              first_note = se.data.tone;
-            }
-            highest_note = Math.max(highest_note, se.data.tone);
-            lowest_note = Math.min(lowest_note, se.data.tone);
+      } 
+      else if (element instanceof Tuplet) {
+        for (let se of element.elements) {
+          if (se instanceof Note) {
+            updateLimits(se.data.tone);
+          } else if (se instanceof Chord) {
+            const tones = se.elements
+              .filter(e => e instanceof Note)
+              .map(e => e.data.tone);
+            if (tones.length > 0) updateLimits(Math.min(...tones));
           }
         }
       }
     }
   }
+  if (first_note === null) return;
+
 
   // Calcola l'intervallo di semitoni di partenza
   const startingInterval = getSemitoneDifference(
