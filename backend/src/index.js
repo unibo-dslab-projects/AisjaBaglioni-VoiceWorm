@@ -85,6 +85,67 @@ app.get("/user/:id", auth, async (c) => {
   return c.json(result.results[0]);
 });
 
+app.delete("/user/me", auth, async (c) => {
+   const user_id = c.get("user").id;
+   const db = c.env.DB
+
+  const result = await db
+    .prepare("DELETE FROM user WHERE id = ?")
+    .bind(user_id)
+    .run()
+
+  if (!result.success || result.meta.changes !== 1) {
+    return c.text("User not found", 404)
+  }
+
+  return c.json({ success: true })
+})
+
+app.put("/user/me/password", auth, async (c) => {
+  const { oldPassword, newPassword } = await c.req.json()
+  const user = c.get("user")
+  const db = c.env.DB
+
+  if (!oldPassword || !newPassword) {
+    return c.text("Missing fields", 400)
+  }
+
+  if (newPassword.length < 8) {
+    return c.text("Password too short", 400)
+  }
+
+  const result = await db
+    .prepare("SELECT password FROM user WHERE id = ?")
+    .bind(user.id)
+    .run()
+
+  if (!result.success || result.results.length !== 1) {
+    return c.text("User not found", 404)
+  }
+
+  const currentHash = result.results[0].password
+
+  const valid = await verifyPassword(currentHash, oldPassword)
+  if (!valid) {
+    return c.text("Wrong password", 401)
+  }
+
+  const newHash = await hashPassword(newPassword)
+
+  const update = await db
+    .prepare("UPDATE user SET password = ? WHERE id = ?")
+    .bind(newHash, user.id)
+    .run()
+
+  if (!update.success || update.meta.changes !== 1) {
+    return c.text("Password update failed", 500)
+  }
+
+  return c.json({ message: "Password updated successfully" })
+})
+
+
+
 // Exercise routes
 app.post("/exercises", auth, async (c) => {
   const user = c.get("user");

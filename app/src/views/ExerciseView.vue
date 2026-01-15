@@ -259,7 +259,7 @@ async function modifyExercise() {
 }
 
 async function deleteExercise(){
-  const confirmed = window.confirm("Sei sicuro di voler eliminare definitivamente questo esercizio?");
+  const confirmed = window.confirm("Are you sure you want to delete your exercise?");
   
   if (!confirmed) return;
 
@@ -1085,7 +1085,6 @@ function defineBase() {
   opacity: 0.8;
 }
 
-
 #score-container {
   margin: 10px;
   position: relative;
@@ -1097,10 +1096,6 @@ function defineBase() {
 
 #target {
   min-height: 50px;
-}
-
-#danger-text {
-  color: var(--danger-text);
 }
 
 </style>

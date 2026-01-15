@@ -7,7 +7,6 @@ import ExercisesView from '@/views/ExerciseView.vue'
 import CreateView from '@/views/CreateView.vue'
 import TutorialView from '@/views/TutorialView.vue'
 import SearchView from '@/views/SearchView.vue'
-import AddStuffView from '@/views/AddStuffView.vue'
 import UserView from '@/views/UserView.vue'
 import FavoriteView from '@/views/FavoriteView.vue'
 
@@ -39,14 +38,6 @@ const router = createRouter({
       path: '/create',
       name: 'create',
       component: CreateView,
-      meta: {
-        noAuth: false,
-      }
-    },
-    {
-      path: '/addstuff',
-      name: 'addstuff',
-      component: AddStuffView,
       meta: {
         noAuth: false,
       }
