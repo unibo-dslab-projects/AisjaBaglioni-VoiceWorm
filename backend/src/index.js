@@ -298,7 +298,8 @@ app.get("/exercises/:userid", auth, async (c) => {
   const loggedUser = c.get("user");
   const requestedUserId = c.req.param("userid");
   const db = c.env.DB;
-
+  const limit = parseInt(c.req.query("limit")) || 10000;
+  const offset = parseInt(c.req.query("offset")) || 0;
   const result = await db.prepare(`
     SELECT 
       exercise.id,
@@ -333,9 +334,10 @@ app.get("/exercises/:userid", auth, async (c) => {
         OR exercise.userID = ?
       )
     ORDER BY exercise.id DESC
+    LIMIT ? OFFSET ?
   `).bind(
     requestedUserId,
-    loggedUser.id
+    loggedUser.id, limit, offset
   ).run();
 
   if (!result.success) {
@@ -446,6 +448,8 @@ app.delete("/favorites/:exerciseid", auth, async (c) => {
 app.get("/favorites", auth, async (c) => {
   const user = c.get("user");
   const db = c.env.DB;
+  const limit = parseInt(c.req.query("limit")) || 10000;
+  const offset = parseInt(c.req.query("offset")) || 0;
   const result = await db.prepare(`
     SELECT 
       exercise.id,
@@ -477,7 +481,8 @@ app.get("/favorites", auth, async (c) => {
     LEFT JOIN user ON exercise.userID = user.id
     WHERE favorite.userID = ?
     ORDER BY favorite.exerciseID DESC
-  `).bind(user.id).run();
+    LIMIT ? OFFSET ?
+  `).bind(user.i,limit, offset).run();
   if (!result.success) {
     return c.text("Cannot retrieve favorites", 500);
   }
