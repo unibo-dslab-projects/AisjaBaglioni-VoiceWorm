@@ -12,8 +12,10 @@ import axios from 'axios';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 
+
 const isOwner = ref(false);
 const route = useRoute();
+
 const credentials = useCredentials();
 const router = useRouter();
 
@@ -158,8 +160,11 @@ function countOriginalBars() {
 }
 
 function toggleManualMode() {
-  showManualMode.value = !showManualMode.value;
-  if (showManualMode.value) showAutomaticMode.value = false;
+showManualMode.value = !showManualMode.value;
+  if (showManualMode.value) {
+      showAutomaticMode.value = false;
+      defineBase(); 
+  }
 }
 
 function toggleAutomaticMode() {
@@ -208,6 +213,7 @@ onMounted(async () => {
     logTags();
     exerciseName.value = exercise_info.value.name;
     userText.value = exercise_info.value.abc;
+    renderedText.value = exercise_info.value.abc;
     visibility.value = exercise_info.value.is_public;
     bpm.value = exercise_info.value.bpm;
     ascendingSteps.value = exercise_info.value.a_steps;
@@ -303,8 +309,20 @@ async function renderScore() {
 
 // Reset dello spartito
 function resetToDefault() {
-  userText.value = "X:1\nK:C\n|[ceg]z2cdcd|\n";
+  userText.value = "X:1\nK:C\nT:Aisja\nL:1/4\nM:4/4\n|[ceg]z2cdcd|";
+  manualStep.value = 0;
+  manualStartOffset.value = 0;
+  manualAscendingOffset.value = 0;
+  manualDescendingOffset.value = 0;
   renderScore();
+}
+
+function resetToLastSaved() {
+  userText.value = baseHeader.value+"\n"+baseBody.value;
+  manualStep.value = 0;
+  manualStartOffset.value = 0;
+  manualAscendingOffset.value = 0;
+  manualDescendingOffset.value = 0;
 }
 
 // Funzione che ferma il synth e il timer, e resetta la scrollbar
@@ -508,25 +526,40 @@ function splitAbcHeaderBody(abcString) {
   const lines = abcString.split("\n");
   const header = [];
   const body = [];
-
   let isBody = false;
-  for (let line of lines) {
-    if (line.startsWith("K:")) {
-      header.push(line);
-      isBody = true;
-    } else if (!isBody) {
-      header.push(line);
-    } else {
+  const fieldRegex = /^[A-Za-z]:/;
+
+for (let line of lines) {
+    const trimmedLine = line.trim();
+
+    if (isBody) {
       body.push(line);
+    } else {
+      const isHeaderLine = 
+        fieldRegex.test(trimmedLine) || 
+        trimmedLine.startsWith('%') || 
+        trimmedLine === '';
+
+      if (isHeaderLine) {
+        header.push(line);
+      } else {
+        isBody = true;
+        body.push(line);
+      }
     }
   }
-  return { header: header.join("\n"), body: body.join("\n") };
+
+  return { 
+    header: header.join("\n").trim(), 
+    body: body.join("\n").trim() 
+  };
 }
 
 //Ottiene la chiave dall'header
 function getSheetKey(header) {
+  if (!header) return 'C'; // Default se l'header è vuoto
   const match = header.match(/^K:([^\s]+)/m);
-  return match ? match[1] : null;
+  return match ? match[1] : 'C'; // Default se non trova K:
 }
 
 function transposeAndRender() {
@@ -539,31 +572,49 @@ function transposeAndRender() {
   let input = new Input(body);
   let score = Score.parse(input, KEYS[key.toUpperCase()]);
 
-  // Trova la prima nota
+  // Trova la prima nota// Trova la prima nota e i limiti (usando il basso come riferimento per gli accordi)
   let first_note = null;
-  let highest_note = 0;
-  let lowest_note = 1000;
-  for(let bar of score.bars) {
-    for(let element of bar.elements) {
-      if(element instanceof Note) {
-        if(first_note === null) {
-          first_note = element.data.tone;
+  let highest_note = -Infinity;
+  let lowest_note = Infinity;
+
+  // Funzione interna per aggiornare i limiti in modo consistente
+  const updateLimits = (tone) => {
+    if (first_note === null) first_note = tone;
+    highest_note = Math.max(highest_note, tone);
+    lowest_note = Math.min(lowest_note, tone);
+  };
+
+  for (let bar of score.bars) {
+    for (let element of bar.elements) {
+      if (element instanceof Note) {
+        updateLimits(element.data.tone);
+      } 
+      else if (element instanceof Chord) {
+        const tones = element.elements
+          .filter(se => se instanceof Note)
+          .map(se => se.data.tone);
+        
+        if (tones.length > 0) {
+          const bassOfChord = Math.min(...tones);
+          updateLimits(bassOfChord);
         }
-        highest_note = Math.max(highest_note, element.data.tone);
-        lowest_note = Math.min(lowest_note, element.data.tone);
-      } else if(element instanceof Tuplet || element instanceof Chord) {
-        for(let se of element.elements) {
-          if(se instanceof Note) {
-            if(first_note === null) {
-              first_note = se.data.tone;
-            }
-            highest_note = Math.max(highest_note, se.data.tone);
-            lowest_note = Math.min(lowest_note, se.data.tone);
+      } 
+      else if (element instanceof Tuplet) {
+        for (let se of element.elements) {
+          if (se instanceof Note) {
+            updateLimits(se.data.tone);
+          } else if (se instanceof Chord) {
+            const tones = se.elements
+              .filter(e => e instanceof Note)
+              .map(e => e.data.tone);
+            if (tones.length > 0) updateLimits(Math.min(...tones));
           }
         }
       }
     }
   }
+  if (first_note === null) return;
+
 
   // Calcola l'intervallo di semitoni di partenza
   const startingInterval = getSemitoneDifference(
@@ -611,7 +662,6 @@ function transposeAndRender() {
   renderScore();
 }
 
-
 // Funzione che mette in pausa o riprende il synth e il timer
 function togglePause() {
   if (isPaused.value) {
@@ -654,14 +704,12 @@ function removeLastBar() {
   userText.value = header + "\n" + newBody;
 }
 
-
 function incStart() {
   const actualBody = splitAbcHeaderBody(userText.value).body;
   manualStartOffset.value++;
   let key = getSheetKey(baseHeader.value);
   let input = new Input(actualBody);
   let score = Score.parse(input, KEYS[key.toUpperCase()]);
-  console.log(score);
   score.transpose(1, KEYS[key.toUpperCase()]);
   let acc = lodash.cloneDeep(score);
   userText.value = baseHeader.value + "\n" + acc.generate();
@@ -727,6 +775,10 @@ function defineBase() {
   baseBody.value = splitAbcHeaderBody(userText.value).body;
   renderScore();
 }
+
+watch(userText, () => {
+  debouncedRender();
+});
 
 </script>
 
@@ -803,7 +855,8 @@ function defineBase() {
 </div>
       
 
- <div id="manual-section" class="form-section">
+<div class="modes-container">
+<div id="manual-section" class="form-section">
   <button class="manual-button" :class="{ 'active-mode': !showManualMode }"@click="toggleManualMode">
     Manual Mode
   </button>
@@ -971,6 +1024,7 @@ function defineBase() {
   <button type="button" @click="transposeAndRender" class="action-button">Generate</button>
   <button type="button" @click="resetToDefault" class="action-button danger-button">Restart</button>
   </div>
+</div>
 </div>
 </div>
 </div>

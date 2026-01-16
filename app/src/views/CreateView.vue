@@ -442,8 +442,9 @@ for (let line of lines) {
 
 //Ottiene la chiave dall'header
 function getSheetKey(header) {
+  if (!header) return 'C'; // Default se l'header è vuoto
   const match = header.match(/^K:([^\s]+)/m);
-  return match ? match[1] : null;
+  return match ? match[1] : 'C'; // Default se non trova K:
 }
 
 function transposeAndRender() {
@@ -596,7 +597,6 @@ function incStart() {
   let key = getSheetKey(baseHeader.value);
   let input = new Input(actualBody);
   let score = Score.parse(input, KEYS[key.toUpperCase()]);
-  console.log(score);
   score.transpose(1, KEYS[key.toUpperCase()]);
   let acc = lodash.cloneDeep(score);
   userText.value = baseHeader.value + "\n" + acc.generate();
