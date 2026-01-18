@@ -373,7 +373,7 @@ strong {
 }
 
 .tutorial-index ul ul ul {
-  list-style: decimal;
+  list-style:lower-roman;
   padding-left: 1.5em;
 }
 
