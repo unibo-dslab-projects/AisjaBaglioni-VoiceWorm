@@ -23,7 +23,7 @@ import Footer from '@/components/Footer.vue';
         <li><router-link :to="{ hash: '#note-duration' }">Note Duration</router-link></li>
         <li><router-link :to="{ hash: '#accidentals' }">Accidentals</router-link></li>
         <li><router-link :to="{ hash: '#octaves' }">Octaves</router-link></li>
-        <li><router-link :to="{ hash: '#tuplets-legatos-chords' }">Tuplets, Legatos, Chords</router-link></li>
+        <li><router-link :to="{ hash: '#tuplets-legatos-chords' }">Chords and Tuplets</router-link></li>
         <li><router-link :to="{ hash: '#example' }">Example</router-link></li>
       </ul>
     </li>
@@ -33,8 +33,12 @@ import Footer from '@/components/Footer.vue';
       <li><router-link :to="{ hash: '#abcinput' }">ABC Input</router-link></li>
       <li><router-link :to="{ hash: '#controls' }">Controls</router-link></li>
       <li><router-link :to="{ hash: '#bpm' }">BPM</router-link></li>
+      <li><router-link :to="{ hash: '#manual' }">Manual Mode</router-link></li>
+      <li><router-link :to="{ hash: '#automatic' }">Automatic Mode</router-link></li>
+      <ul>
       <li><router-link :to="{ hash: '#steps' }">Steps</router-link></li>
       <li><router-link :to="{ hash: '#transpose' }">Transpose</router-link></li>
+      </ul>
       <li><router-link :to="{ hash: '#tags' }">Tags and Visibility</router-link></li>
     </ul>
   </ul>
@@ -64,12 +68,12 @@ import Footer from '@/components/Footer.vue';
         The header will contain information regarding the general rules of our score. <br>
         The body is where we will write music, separating each bar with the "|" symbol.
         <ul>
-          <li><code>X:1</code> → This is the <strong>identification number</strong> of the score. Since we work with only one score at a time, leave it as it is</li>
-    <li><code>T: Aisja's</code> → This is the <strong>title</strong></li>
+    <li><code>X:1</code> → This is the <strong>identification number</strong> of the score. Since we work with only one score at a time, leave it as it is</li>    
     <li><code>K: C</code> → This is the key (C = Do) and determines the score <strong>alterations</strong></li>
-    <li><code>M: 4/4</code> → This is the <strong>time signature</strong>, which means that each bar should last 4/4</li>
+    <li><code>T: Aisja</code> → This is the <strong>title</strong></li>
     <li><code>L: 1/4</code> → This means that the <strong>default length</strong> of notes will be 1/4, and the default length of rests will be 1/8</li>
-    <li><code>|C|</code> → Each <strong>bar</strong> is encapsulated in pipes, so this is one bar containing the note C</li>
+    <li><code>M: 4/4</code> → This is the <strong>time signature</strong>, which means that each bar should last 4/4</li>
+    <li><code>|abcnotation|</code> → Each <strong>bar</strong> is encapsulated in pipes, so this is one bar containing some music </li>
   </ul>
     </p>
     </div>
@@ -121,13 +125,12 @@ If the L parameter is present, the notes will last exactly as long as L.
     </div>
 
     <div id="tuplets-legatos-chords" class="section">
-      <h2>Tuplets, Legatos, Chords</h2>
-    <img class="tutorial-image" src="/public/TUTORIAL/tupletschords.svg">
+      <h2>Chords and Tuplets</h2>
+    <img class="tutorial-image" src="/public/TUTORIAL/chords.svg">
     <p>
       
       <ul>
-    <li><strong>Chords:</strong> Multiple notes played at the same time. Enclosed in square brackets: <code>[CEG]</code> plays C, E, and G simultaneously.</li>
-     <li><strong>Legatos (Slurs):</strong> Notes that should be played smoothly and connected. Indicated with parentheses around the notes: <code>(CDE)</code>.</li>
+    <li><strong>Chords:</strong> Multiple notes played at the same time. Enclosed in square brackets: <code>[CEG]</code> plays C, E, and G simultaneously. Its length must be specificied after the square brackets, just like you would do for a note.</li>
      <li><strong>Tuplets:</strong> Groups of notes that fit into a different rhythm than normal. For example, a triplet of three notes played in the time of two. Written with parentheses and a number: <code>(3CDE</code> for a triplet.</li>
       </ul>
     </p>
@@ -135,7 +138,7 @@ If the L parameter is present, the notes will last exactly as long as L.
 
 <div id="example" class="section">
     <h2>Example</h2>
-    <p>Below is an example of a two-bars score in A, with a default note length of 1/8. </p>
+    <p>Below is an example of a three-bars score in C, with a default note length of 1/8. </p>
     <img class="tutorial-image" src="/public/TUTORIAL/example.svg">
     </div>
 
@@ -147,7 +150,7 @@ If the L parameter is present, the notes will last exactly as long as L.
         By writing in the text field, you will be able to choose a <strong>name</strong>> for your exercise.
         I recommend choosing a significant, unique name, to avoid duplicates and confusion later on.
     </p>
-     <img class="tutorial-image" src="/public/TUTORIAL/1-ExName.svg">
+     <img class="tutorial-image" src="/public/TUTORIAL/name.svg">
     </div>
 
     <div id="abcinput" class="section">
@@ -157,7 +160,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     The text will change after generation! Make sure you have a valid header and that each bar is separated by <code>|</code>.
     The rendered score will appear below.
   </p>
-     <img class="tutorial-image" src="/public/TUTORIAL/2-ABC.svg">
+     <img class="tutorial-image" src="/public/TUTORIAL/abc.svg">
     </div>
 
 <div id="controls" class="section">
@@ -167,24 +170,13 @@ If the L parameter is present, the notes will last exactly as long as L.
   </p>
 
   <ul class="command-list">
-    <li><strong>Enter</strong> → Render the score based on the ABC notation you entered.</li>
     <li><strong>Play</strong> → Play the rendered score.</li>
     <li><strong>Pause / Resume</strong> → Pause or resume playback.</li>
     <li><strong>Save WAV</strong> → Export the score as a WAV audio file.</li>
     <li><strong>Save SVG</strong> → Export the score as an SVG image file.</li>
+    <li><strong>Restart</strong> → Resets the score to the default state.</li>
   </ul>
-
-  <img class="tutorial-image" src="/public/TUTORIAL/3-Commands.svg">
-
-  <p>Once you are satisfied with your settings, you can generate the warm-up:</p>
-
-  <ul class="command-list">
-    <li><strong>Generate</strong> → Generates a new score based on your settings.</li>
-    <li><strong>Reset</strong> → Resets the score to the default state.</li>
-  </ul>
-
-  <img class="tutorial-image" src="/public/TUTORIAL/4-Actions.svg">
-
+  <img class="tutorial-image" src="/public/TUTORIAL/commands.svg">
 </div>
 
 <div id="bpm" class="section">
@@ -200,9 +192,26 @@ If the L parameter is present, the notes will last exactly as long as L.
     <li><strong>Input:</strong> Enter a number directly (maximum 300 BPM).</li>
   </ul>
 
-  <img class="tutorial-image" src="/public/TUTORIAL/5-BPM.svg">
+  <img class="tutorial-image" src="/public/TUTORIAL/tempo.svg">
 </div>
 
+<div id="manual" class="section">
+<h2>Manual Mode</h2>
+<p>
+  VoiceWorm can operate in both automatic and manual mode. <br>
+  In manual mode, you control the modulation process in three steps: 
+  first, you transpose your score to set the starting key; 
+  then, you choose how many steps to go up (one semitone at a time); 
+  finally, you select how many steps to go down.
+</p>
+<img class="tutorial-image" src="/public/TUTORIAL/manual.svg">
+</div>
+<div id="automatic" class="section">
+  <h2>Automatic Mode</h2>
+<p>
+  In automatic mode, you can define the starting note, the highest and lowest target notes, and the interval size between each modulation step (for example, one semitone, one whole tone, etc.). VoiceWorm will then automatically generate all the intermediate transpositions within this range.
+</p>
+</div>
 <div id="steps" class="section">
   <h2>Steps</h2>
   <p>
@@ -215,7 +224,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     <li><strong>Ascending Steps:</strong> Number of semitones to increase between each iteration during the ascent.</li>
     <li><strong>Descending Steps:</strong> Number of semitones to decrease between each iteration during the descent.</li>
   </ul>
-  <img class="tutorial-image" src="/public/TUTORIAL/6-Ascending.svg">
+  <img class="tutorial-image" src="/public/TUTORIAL/automatic.svg">
 </div>
 
 <div id="transpose" class="section">
@@ -228,7 +237,7 @@ If the L parameter is present, the notes will last exactly as long as L.
   <ul class="command-list">
     <li><strong>Starting Note:</strong> The note where the warm-up will begin. All subsequent notes will be transposed accordingly.</li>
   </ul>
-  <img class="tutorial-image" src="/public/TUTORIAL/7-Starting.svg">
+  <img class="tutorial-image" src="/public/TUTORIAL/starting.svg">
   <p>
     The <strong>Highest Note</strong> field determines <strong>the top note your warm-up will reach.</strong>
     The highest note of your initial score will be transposed step by step until it matches the value of this field. This way, the warm-up completes its first ascending cycle smoothly.
@@ -237,7 +246,7 @@ If the L parameter is present, the notes will last exactly as long as L.
   <ul class="command-list">
     <li><strong>Highest Note:</strong> The target note for the end of the ascending phase. Transposition is gradual according to the steps defined in ascending steps.</li>
   </ul>
-   <img class="tutorial-image" src="/public/TUTORIAL/8-Highest.svg">
+   <img class="tutorial-image" src="/public/TUTORIAL/highest.svg">
 
    <p>
     The <strong>Lowest Note</strong> field determines <strong>how low the warm-up will descend.</strong>
@@ -248,7 +257,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     <li><strong>Lowest Note:</strong> The target note for the end of the descending phase. Transposition occurs step by step according to the steps defined in descending steps.</li>
   </ul>
 
-  <img class="tutorial-image" src="/public/TUTORIAL/9-Lowest.svg">
+  <img class="tutorial-image" src="/public/TUTORIAL/lowest.svg">
 
    <p>
     At the end of your settings, your warm-up will follow this cycle:
@@ -267,7 +276,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     You can choose the visibility of your exercise, deciding whether it should be <strong>private</strong> or <strong>public</strong>.
     Finally, you can <strong>save</strong> your exercise, whether private or public.
     </p>
-  <img class="tutorial-image" src="/public/TUTORIAL/10-Tags.svg">
+  <img class="tutorial-image" src="/public/TUTORIAL/tags.svg">
 </div>
 
 </div>
@@ -311,9 +320,10 @@ strong {
 }
 
 .section ul {
-  list-style:square;
+  list-style: square;
   padding-left: 1.5em; 
 }
+
 
 .section ul li {
   position: relative;
@@ -321,6 +331,7 @@ strong {
   padding-left: 20px; 
   font-size: 1rem;
 }
+
 
 .tutorial-image {
   margin-top: 30px;
@@ -355,6 +366,11 @@ strong {
 }
 
 .tutorial-index ul {
+  list-style: decimal;
+  padding-left: 1.5em;
+}
+
+.tutorial-index ul ul ul {
   list-style: decimal;
   padding-left: 1.5em;
 }

@@ -482,7 +482,7 @@ app.get("/favorites", auth, async (c) => {
     WHERE favorite.userID = ?
     ORDER BY favorite.exerciseID DESC
     LIMIT ? OFFSET ?
-  `).bind(user.i,limit, offset).run();
+  `).bind(user.id,limit, offset).run();
   if (!result.success) {
     return c.text("Cannot retrieve favorites", 500);
   }

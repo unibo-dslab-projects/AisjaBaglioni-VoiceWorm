@@ -903,12 +903,12 @@ function defineBase() {
       <option value="7">7</option>
     </select>
   </div>
+</div>
+</div>
   <div class="action-buttons">
   <button type="button" @click="transposeAndRender" class="action-button">Generate</button>
   <button type="button" @click="resetToDefault" class="action-button danger-button">Restart</button>
   </div>
-</div>
-</div>
 </div>
 </div>
 
