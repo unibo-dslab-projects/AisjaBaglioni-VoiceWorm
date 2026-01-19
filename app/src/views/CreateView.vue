@@ -676,9 +676,9 @@ function defineBase() {
     </div>
 
       <div class="form-section">
-        <label class="form-label" for="exercise-name">
+        <h2 class="form-label">
           Exercise name
-        </label>
+        </h2>
 
         <input
           type="text"
@@ -690,9 +690,7 @@ function defineBase() {
       </div>
 
       <div class="form-section">
-        <label class="form-label" for="exerciseInput">
-          ABC Notation
-        </label>
+        <h2 class="form-label">ABC Notation</h2>
         <textarea
           id="exerciseInput"
           class="exercise-text"
@@ -713,12 +711,13 @@ function defineBase() {
 
 
   <div class="form-section">
-  <label class="form-label" for="bpm-control">Tempo</label>
+  <h2 class="form-label">Tempo</h2>
 
   <div id="bpm-control" class="bpm-control">
-    <label for="bpm">BPM: </label>
+    <label for="bpm-number">BPM: </label>
     <input
       class="bpm form-input"
+      id="bpm-number"
       type="number"
       v-model.number="bpm"
       min="1"
@@ -729,6 +728,7 @@ function defineBase() {
     
     <input
       type="range"
+      id="bpm-slider"
       v-model.number="bpm"
       min="1"
       max="300"
@@ -800,17 +800,17 @@ function defineBase() {
     Automatic Mode
   </button>
   <div v-if="showAutomaticMode" class="form-section" id="automatic-mode">
-  <label class="form-label" for="step-control">Steps</label>
+  <h2 class="form-label">Steps</h2>
   <div id="step-control" class="step-control">
     <div class="step-group">
-      <label for="ascending_steps">Ascending steps:</label>
+      <h2 for="ascending_steps">Ascending steps:</h2>
       <select v-model.number="ascendingSteps" id="ascending_steps" class="select-input">
         <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
       </select>
     </div>
 
     <div class="step-group">
-      <label for="descending_steps">Descending steps:</label>
+      <h2 for="descending_steps">Descending steps:</h2>
       <select v-model.number="descendingSteps" id="descending_steps" class="select-input">
         <option v-for="n in 6" :key="n" :value="n">{{ n }}</option>
       </select>
@@ -818,10 +818,10 @@ function defineBase() {
   </div>
 
 <div class="form-section">
-  <label class="form-label" for="note-group">Transposition Range</label>
+  <h2 class="form-label">Transposition Range</h2>
 
   <div class="note-group">
-    <label class="note-label" for="starting_note">Starting note:</label>
+    <h2 class="note-label" for="starting_note">Starting note:</h2>
     <select v-model="startingNote" id="starting_note" class="select-input">
       <option value="0">C</option>
       <option value="1">C#/Db</option>
@@ -849,7 +849,7 @@ function defineBase() {
   </div>
 
   <div class="note-group">
-    <label class="note-label" for="highest_note">Highest note:</label>
+    <h2 class="note-label" for="highest_note">Highest note:</h2>
     <select v-model="highestNote" id="highest_note" class="select-input">
       <option value="0">C</option>
       <option value="1">C#/Db</option>
@@ -877,7 +877,7 @@ function defineBase() {
   </div>
 
   <div class="note-group">
-    <label class="note-label" for="lowest_note">Lowest note:</label>
+    <h2 class="note-label" for="lowest_note">Lowest note:</h2>
     <select v-model="lowestNote" id="lowest_note" class="select-input">
       <option value="0">C</option>
       <option value="1">C#/Db</option>
@@ -913,12 +913,12 @@ function defineBase() {
 </div>
 
 <div class="form-section">
-  <label class="form-label">Tags</label>
+  <h2 class="form-label">Tags</h2>
   <div v-for="(tags, category) in groupedTags" :key="category" class="tag-group">
     <div class="category-name">{{ category }}</div>
     <div class="tags">
       <label v-for="tag in tags" :key="tag.id" class="tag-label">
-        <input type="checkbox" v-model="selectedTags[tag.id]" />
+        <input name="tagcheckbox" type="checkbox" v-model="selectedTags[tag.id]" />
         {{ tag.label }}
       </label>
     </div>
@@ -927,7 +927,7 @@ function defineBase() {
 
 
     <div class="form-section">
-      <label class="form-label">Visibility</label>
+      <h2 class="form-label">Visibility</h2>
 
       <div class="visibility">
       <input
@@ -959,7 +959,7 @@ function defineBase() {
 
     <div class="preview-container">
     <div class="form-section" id="renderedscore">
-  <label class="form-label" for="renderedscore">Rendered Score</label>
+    <h2 class="form-label">Rendered Score</h2>
   <div id="score-container">
     <div id="target"></div>
     <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>

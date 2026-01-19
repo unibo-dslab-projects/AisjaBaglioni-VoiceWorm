@@ -70,7 +70,7 @@ try {
         
       <div>
         <label for="email">E-mail:</label>
-        <input type="email" id="email" v-model="email" required />
+        <input type="email" id="email" v-model="email" required autocomplete="off"/>
       </div>
 
       <div>
@@ -86,7 +86,7 @@ try {
 
       <div>
         <label for="username">Username:</label>
-        <input type="text" id="username" v-model="username" placeholder="At least 3 chars" required />
+        <input type="text" id="username" v-model="username" placeholder="At least 3 chars" required autocomplete="off"/>
       </div>
 
       <button type="submit">Sign up</button>

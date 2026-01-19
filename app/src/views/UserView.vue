@@ -164,13 +164,13 @@ onMounted(async () => {
     </table>
 
 <div v-if="isOwner" class="form-section" id="danger-zone">
-  <label class="form-label" id="danger-text">Account Settings</label>
+  <h2 class="form-label danger-text" >Account Settings</h2>
   
   <div class="danger-controls">
     <div class="change-password-box">
       <p style="margin-bottom: 8px; font-size: 0.9rem; opacity: 0.8;">Change your account password:</p>
-      <input type="password" placeholder="Current password" v-model="oldPassword" />
-      <input type="password" placeholder="New password" v-model="newPassword" />
+      <input type="password" placeholder="Current password" v-model="oldPassword" id="oldPassword"/>
+      <input type="password" placeholder="New password" v-model="newPassword" id="newPassword"/>
       <button class="danger-button outline" @click="changePassword">Change Password</button>
       <div v-if="changeMessage" class="modify-message">{{ changeMessage }}</div>
     </div>
@@ -190,7 +190,7 @@ onMounted(async () => {
 
 <style scoped>
 
-#danger-text {
+.danger-text {
   color: var(--danger-text);
 }
 

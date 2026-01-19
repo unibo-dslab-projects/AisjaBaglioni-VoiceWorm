@@ -113,6 +113,7 @@ onMounted(async () => {
     type="text"
     v-model="searchQuery"
     placeholder="Search exercises..."
+    id="searchbox"
   />
   <button type="submit">Search</button>
   <button @click="reset" >Reset</button>

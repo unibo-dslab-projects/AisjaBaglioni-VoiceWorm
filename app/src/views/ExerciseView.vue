@@ -793,9 +793,9 @@ watch(userText, () => {
     </div>
 
       <div v-if="isOwner" class="form-section">
-        <label class="form-label" for="exercise-name">
+        <h2 class="form-label">
           Exercise name
-        </label>
+        </h2>
 
         <input
           type="text"
@@ -807,9 +807,9 @@ watch(userText, () => {
       </div>
 
       <div class="form-section">
-        <label class="form-label" for="exerciseInput">
+        <h2 class="form-label">
           ABC Notation
-        </label>
+        </h2>
         <textarea
           id="exerciseInput"
           class="exercise-text"
@@ -829,10 +829,10 @@ watch(userText, () => {
       </div>
 
 <div class="form-section">
-  <label class="form-label" for="bpm-control">Tempo</label>
+  <h2 class="form-label">Tempo</h2>
 
   <div id="bpm-control" class="bpm-control">
-    <label for="bpm">BPM: </label>
+    <label for="bpm-number">BPM: </label>
     <input
       class="bpm form-input"
       type="number"
@@ -840,6 +840,7 @@ watch(userText, () => {
       min="1"
       max="300"
       step="1"
+      id="bpm-number"
       @input="bpm = Math.floor(bpm)"
     />
     
@@ -849,6 +850,7 @@ watch(userText, () => {
       min="1"
       max="300"
       step="1"
+      id="bpm-slider"
       class="range-input"
     />
   </div>
@@ -917,7 +919,7 @@ watch(userText, () => {
     Automatic Mode
   </button>
   <div v-if="showAutomaticMode" class="form-section" id="automatic-mode">
-  <label class="form-label" for="step-control">Steps</label>
+  <h2 class="form-label">Steps</h2>
   <div id="step-control" class="step-control">
     <div class="step-group">
       <label for="ascending_steps">Ascending steps:</label>
@@ -935,7 +937,7 @@ watch(userText, () => {
   </div>
 
 <div class="form-section">
-  <label class="form-label" for="note-group">Transposition Range</label>
+  <h2 class="form-label">Transposition Range</h2>
 
   <div class="note-group">
     <label class="note-label" for="starting_note">Starting note:</label>
@@ -1030,14 +1032,14 @@ watch(userText, () => {
 </div>
 
 <div class="form-section">
-  <label class="form-label">Tags</label>
+  <h2 class="form-label">Tags</h2>
 
   <div v-if="isOwner">
     <div v-for="(tags, category) in groupedTags" :key="category" class="tag-group">
       <div class="category-name">{{ category }}</div>
       <div class="tags">
         <label v-for="tag in tags" :key="tag.id" class="tag-label">
-          <input type="checkbox" v-model="selectedTags[tag.id]" />
+          <input name="tag-checkbox" type="checkbox" v-model="selectedTags[tag.id]" />
           {{ tag.label }}
         </label>
       </div>
@@ -1060,7 +1062,7 @@ watch(userText, () => {
 </div>
 
 <div class="form-section">
-  <label class="form-label">Favorites</label>
+  <h2 class="form-label">Favorites</h2>
 
   <div v-if="is_favorite">
     <p>This exercise is in your favorites.</p>
@@ -1081,7 +1083,7 @@ watch(userText, () => {
 
 
 <div v-if="isOwner" class="form-section">
-  <label class="form-label">Visibility</label>
+  <h2 class="form-label">Visibility</h2>
 
   <div class="visibility">
     <input
@@ -1102,7 +1104,7 @@ watch(userText, () => {
   </div>
 </div>
 <div v-if="isOwner" class="form-section">
-  <label class="form-label" id="danger-text">Danger Zone</label>
+  <h2 class="form-label" id="danger-text">Danger Zone</h2>
   <div class="danger-buttons">
     <button id="delete-button" class="danger-button" @click="modifyExercise">Modify Exercise</button>
     <button id="delete-button" class="danger-button" @click="deleteExercise">Delete Exercise</button>
@@ -1114,7 +1116,7 @@ watch(userText, () => {
 
   <div class="preview-container">
     <div class="form-section" id="renderedscore">
-  <label class="form-label" for="renderedscore">Rendered Score</label>
+  <h2 class="form-label">Rendered Score</h2>
   <div id="score-container">
     <div id="target"></div>
     <div id="scrollbar" v-if="scrollbarLeft!==null && scrollbarHeight!==null && scrollbarTop!==null" :style="{ left: scrollbarLeft + 'px', top: scrollbarTop + 'px', height: scrollbarHeight + 'px'}"></div>

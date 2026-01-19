@@ -51,7 +51,7 @@ status = false;
     <form class="access-form" @submit.prevent="handleLogin">
       <div>
         <label for="email">E-mail:</label>
-        <input type="email" id="email" v-model="email" required />
+        <input type="email" id="email" v-model="email" required autocomplete="on"/>
       </div>
 
       <div>
