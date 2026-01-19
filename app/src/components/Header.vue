@@ -3,6 +3,8 @@ import { ref, computed } from 'vue';
 import { useCredentials } from '@/stores/credentials';
 import { useTheme } from '@/stores/theme';
 import { useRouter } from 'vue-router';
+import logoDark from '@/assets/logo_dark.svg';
+import logoWhite from '@/assets/logo_white.svg';
 
 const credentials = useCredentials();
 const theme = useTheme();
@@ -48,9 +50,13 @@ document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
 <template>
     <header :class="{ dark: theme.darkMode }">
       <div id="header-left">
-        <router-link to="/" class="logo-link">
-        <img :src="theme.darkMode ? '/logo_dark.svg' : '/logo_white.svg'" alt="App Logo" class="app-logo" />
-        </router-link>
+<router-link to="/" class="logo-link">
+      <img 
+        :src="theme.darkMode ? logoDark : logoWhite" 
+        alt="App Logo" 
+        class="app-logo" 
+      />
+    </router-link>
       </div>
 
       <div id="header-right">

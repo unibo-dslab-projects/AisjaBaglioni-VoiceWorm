@@ -67,7 +67,8 @@ import Footer from '@/components/Footer.vue';
         As you can see, we can divide it into two parts: the <strong>header</strong> and the <strong>body</strong>. <br>
         The header will contain information regarding the general rules of our score. <br>
         The body is where we will write music, separating each bar with the "|" symbol.
-        <ul>
+    </p>
+  <ul>
     <li><code>X:1</code> → This is the <strong>identification number</strong> of the score. Since we work with only one score at a time, leave it as it is</li>    
     <li><code>K: C</code> → This is the key (C = Do) and determines the score <strong>alterations</strong></li>
     <li><code>T: Aisja</code> → This is the <strong>title</strong></li>
@@ -75,7 +76,6 @@ import Footer from '@/components/Footer.vue';
     <li><code>M: 4/4</code> → This is the <strong>time signature</strong>, which means that each bar should last 4/4</li>
     <li><code>|abcnotation|</code> → Each <strong>bar</strong> is encapsulated in pipes, so this is one bar containing some music </li>
   </ul>
-    </p>
     </div>
     <div id="note-duration" class="section">
       <h2>Note Duration</h2>
@@ -85,20 +85,16 @@ If the L parameter is present, the notes will last exactly as long as L.
 <strong>Rests</strong>, on the other hand, are worth half of L.
     </p>
     <img class="tutorial-image" src="@/assets//TUTORIAL/length.svg">
-    <p>
       <ul>
         <li>To <strong>change the value</strong> of a note, multiply it by an integer or fractional value, or divide it by an integer (e.g., <code>C2</code>, <code>C/3</code>)</li>
     <li><strong>Rest symbols</strong> are written as <code>z</code> and are worth half of <code>L</code>. In terms of duration, they behave like notes</li>
       </ul>
-    </p>
     </div>
 
     <div id="accidentals" class="section">
       <h2>Accidentals</h2>
     <p>Accidentals are <strong>alterations</strong> written before the notes inside of the score.</p>
     <img class="tutorial-image" src="@/assets//TUTORIAL/accidentals.svg">
-    <p>
-      
       <ul>
     <li><strong>Sharps ♯</strong> are written as <code>^</code> → They raise the note by a semitone</li>
     <li><strong>Double sharps ♯♯</strong> are written as <code>^^</code> → They raise the note by a tone</li>
@@ -106,7 +102,6 @@ If the L parameter is present, the notes will last exactly as long as L.
     <li><strong>Double flats ♭♭</strong> are written as <code>__</code> → They lower the note by a tone</li>
     <li><strong>Naturals ♮</strong> are written as <code>=</code> → They restore the pitch of a previously altered note</li>
       </ul>
-    </p>
     </div>
 
 
@@ -114,26 +109,21 @@ If the L parameter is present, the notes will last exactly as long as L.
       <h2>Octaves</h2>
     <p> In ABC Notation, <strong>octaves</strong> determine the pitch range of the notes. Notes can be written in different octaves using commas and apostrophes.</p>
     <img class="tutorial-image" src="@/assets/TUTORIAL/octaves.svg">
-    <p>
-      
       <ul>
     <li><strong>Uppercase and lowercase matter:</strong> <code>C</code> is C4 (middle C), <code>c</code> is C5 (one octave higher)</li>
     <li><strong>Lower octaves:</strong> use commas after the note (<code>C,</code> = one octave below middle C)</li>
     <li><strong>Higher octaves:</strong> use apostrophes after the note (<code>C'</code> = one octave above middle C, <code>C''</code> = two octaves above)</li>
       </ul>
-    </p>
     </div>
 
     <div id="tuplets-legatos-chords" class="section">
       <h2>Chords and Tuplets</h2>
     <img class="tutorial-image" src="@/assets/TUTORIAL/chords.svg">
-    <p>
       
       <ul>
     <li><strong>Chords:</strong> Multiple notes played at the same time. Enclosed in square brackets: <code>[CEG]</code> plays C, E, and G simultaneously. Its length must be specificied after the square brackets, just like you would do for a note.</li>
      <li><strong>Tuplets:</strong> Groups of notes that fit into a different rhythm than normal. For example, a triplet of three notes played in the time of two. Written with parentheses and a number: <code>(3CDE</code> for a triplet.</li>
       </ul>
-    </p>
     </div>
 
 <div id="example" class="section">
