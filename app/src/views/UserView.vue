@@ -51,6 +51,10 @@ async function loadUser() {
     }
 }
 
+function isPasswordValid(pwd) {
+  return /^(?=.*[A-Z])(?=.*\d).{8,64}$/.test(pwd);
+}
+
 async function changePassword() {
   changeMessage.value = ''
 
@@ -59,9 +63,10 @@ async function changePassword() {
     return
   }
 
-  if (newPassword.value.length < 8) {
-    changeMessage.value = 'Password must be at least 8 characters'
-    return
+if (!isPasswordValid(newPassword.value)) {
+    changeMessage.value =
+      'Password must be at least 8 characters long and contain at least one uppercase letter and one number';
+    return;
   }
 
   if (newPassword.value == oldPassword.value) {
