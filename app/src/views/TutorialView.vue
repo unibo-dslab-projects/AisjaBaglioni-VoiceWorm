@@ -61,7 +61,7 @@ import Footer from '@/components/Footer.vue';
         As a grammar, abcnotation has well-defined rules.
         Let's take a look at the ones you will use.
     </p>
-    <img class="tutorial-image" src="/public/TUTORIAL/header.svg">
+    <img class="tutorial-image" src="@/assets/TUTORIAL/header.svg">
     <p>
         This is the structure of an ABC text.
         As you can see, we can divide it into two parts: the <strong>header</strong> and the <strong>body</strong>. <br>
@@ -84,7 +84,7 @@ The <strong>duration</strong> of the notes, in the absence of the L parameter in
 If the L parameter is present, the notes will last exactly as long as L.
 <strong>Rests</strong>, on the other hand, are worth half of L.
     </p>
-    <img class="tutorial-image" src="/public/TUTORIAL/length.svg">
+    <img class="tutorial-image" src="@/assets//TUTORIAL/length.svg">
     <p>
       <ul>
         <li>To <strong>change the value</strong> of a note, multiply it by an integer or fractional value, or divide it by an integer (e.g., <code>C2</code>, <code>C/3</code>)</li>
@@ -96,7 +96,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     <div id="accidentals" class="section">
       <h2>Accidentals</h2>
     <p>Accidentals are <strong>alterations</strong> written before the notes inside of the score.</p>
-    <img class="tutorial-image" src="/public/TUTORIAL/accidentals.svg">
+    <img class="tutorial-image" src="@/assets//TUTORIAL/accidentals.svg">
     <p>
       
       <ul>
@@ -113,7 +113,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     <div id="octaves" class="section">
       <h2>Octaves</h2>
     <p> In ABC Notation, <strong>octaves</strong> determine the pitch range of the notes. Notes can be written in different octaves using commas and apostrophes.</p>
-    <img class="tutorial-image" src="/public/TUTORIAL/octaves.svg">
+    <img class="tutorial-image" src="@/assets/TUTORIAL/octaves.svg">
     <p>
       
       <ul>
@@ -126,7 +126,7 @@ If the L parameter is present, the notes will last exactly as long as L.
 
     <div id="tuplets-legatos-chords" class="section">
       <h2>Chords and Tuplets</h2>
-    <img class="tutorial-image" src="/public/TUTORIAL/chords.svg">
+    <img class="tutorial-image" src="@/assets/TUTORIAL/chords.svg">
     <p>
       
       <ul>
@@ -139,7 +139,7 @@ If the L parameter is present, the notes will last exactly as long as L.
 <div id="example" class="section">
     <h2>Example</h2>
     <p>Below is an example of a three-bars score in C, with a default note length of 1/8. </p>
-    <img class="tutorial-image" src="/public/TUTORIAL/example.svg">
+    <img class="tutorial-image" src="@/assets/TUTORIAL/example.svg">
     </div>
 
     <div id="howto" class="section">
@@ -152,7 +152,7 @@ If the L parameter is present, the notes will last exactly as long as L.
         By writing in the text field, you will be able to choose a <strong>name</strong>> for your exercise.
         I recommend choosing a significant, unique name, to avoid duplicates and confusion later on.
     </p>
-     <img class="tutorial-image" src="/public/TUTORIAL/name.svg">
+     <img class="tutorial-image" src="@/assets/TUTORIAL/name.svg">
     </div>
 
     <div id="abcinput" class="section">
@@ -162,7 +162,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     The text will change after generation! Make sure you have a valid header and that each bar is separated by <code>|</code>.
     The rendered score will appear below.
   </p>
-     <img class="tutorial-image" src="/public/TUTORIAL/abc.svg">
+     <img class="tutorial-image" src="@/assets/TUTORIAL/abc.svg">
     </div>
 
 <div id="controls" class="section">
@@ -178,7 +178,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     <li><strong>Save SVG</strong> → Export the score as an SVG image file.</li>
     <li><strong>Restart</strong> → Resets the score to the default state.</li>
   </ul>
-  <img class="tutorial-image" src="/public/TUTORIAL/commands.svg">
+  <img class="tutorial-image" src="@/assets/TUTORIAL/commands.svg">
 </div>
 
 <div id="bpm" class="section">
@@ -194,7 +194,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     <li><strong>Input:</strong> Enter a number directly (maximum 300 BPM).</li>
   </ul>
 
-  <img class="tutorial-image" src="/public/TUTORIAL/tempo.svg">
+  <img class="tutorial-image" src="@/assets/TUTORIAL/tempo.svg">
 </div>
 
 <div id="manual" class="section">
@@ -206,7 +206,7 @@ If the L parameter is present, the notes will last exactly as long as L.
   then, you choose how many steps to go up (one semitone at a time); 
   finally, you select how many steps to go down.
 </p>
-<img class="tutorial-image" src="/public/TUTORIAL/manual.svg">
+<img class="tutorial-image" src="@/assets/TUTORIAL/manual.svg">
 </div>
 <div id="automatic" class="section">
   <h2>Automatic Mode</h2>
@@ -226,7 +226,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     <li><strong>Ascending Steps:</strong> Number of semitones to increase between each iteration during the ascent.</li>
     <li><strong>Descending Steps:</strong> Number of semitones to decrease between each iteration during the descent.</li>
   </ul>
-  <img class="tutorial-image" src="/public/TUTORIAL/automatic.svg">
+  <img class="tutorial-image" src="@/assets/TUTORIAL/automatic.svg">
 </div>
 
 <div id="transpose" class="section">
@@ -239,7 +239,7 @@ If the L parameter is present, the notes will last exactly as long as L.
   <ul class="command-list">
     <li><strong>Starting Note:</strong> The note where the warm-up will begin. All subsequent notes will be transposed accordingly.</li>
   </ul>
-  <img class="tutorial-image" src="/public/TUTORIAL/starting.svg">
+  <img class="tutorial-image" src="@/assets/TUTORIAL/starting.svg">
   <p>
     The <strong>Highest Note</strong> field determines <strong>the top note your warm-up will reach.</strong>
     The highest note of your initial score will be transposed step by step until it matches the value of this field. This way, the warm-up completes its first ascending cycle smoothly.
@@ -248,7 +248,7 @@ If the L parameter is present, the notes will last exactly as long as L.
   <ul class="command-list">
     <li><strong>Highest Note:</strong> The target note for the end of the ascending phase. Transposition is gradual according to the steps defined in ascending steps.</li>
   </ul>
-   <img class="tutorial-image" src="/public/TUTORIAL/highest.svg">
+   <img class="tutorial-image" src="@/assets/TUTORIAL/highest.svg">
 
    <p>
     The <strong>Lowest Note</strong> field determines <strong>how low the warm-up will descend.</strong>
@@ -259,7 +259,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     <li><strong>Lowest Note:</strong> The target note for the end of the descending phase. Transposition occurs step by step according to the steps defined in descending steps.</li>
   </ul>
 
-  <img class="tutorial-image" src="/public/TUTORIAL/lowest.svg">
+  <img class="tutorial-image" src="@/assets/TUTORIAL/lowest.svg">
 
    <p>
     At the end of your settings, your warm-up will follow this cycle:
@@ -278,7 +278,7 @@ If the L parameter is present, the notes will last exactly as long as L.
     You can choose the visibility of your exercise, deciding whether it should be <strong>private</strong> or <strong>public</strong>.
     Finally, you can <strong>save</strong> your exercise, whether private or public.
     </p>
-  <img class="tutorial-image" src="/public/TUTORIAL/tags.svg">
+  <img class="tutorial-image" src="@/assets/TUTORIAL/tags.svg">
 </div>
 
 </div>
