@@ -9,18 +9,15 @@ import Footer from '@/components/Footer.vue';
 
 import ExerciseTable from '@/components/ExerciseTable.vue';
 
+import { useApiClient } from '@/composables/useApiClient';
+
 const credentials = useCredentials();
 const router = useRouter();
 const route = useRoute();
 const limit = ref(10);
 const page = ref(0);
 
-const client = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    headers: {
-        'Authorization': `Bearer ${credentials.token}`
-    }
-});
+const { client } = useApiClient();
 
 const exercises = ref([]);
 

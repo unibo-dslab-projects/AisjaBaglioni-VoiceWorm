@@ -7,16 +7,12 @@ import axios from 'axios';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 import ExerciseForm from '@/components/ExerciseForm.vue';
+import { useApiClient } from '@/composables/useApiClient';
 
 const credentials = useCredentials();
 const router = useRouter();
 
-const client = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    headers: {
-        'Authorization': `Bearer ${credentials.token}`
-    }
-});
+const { client } = useApiClient();
 
 const message = ref('');
 const allTags = ref([]);

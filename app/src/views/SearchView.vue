@@ -7,15 +7,12 @@ import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 import ExerciseTable from '@/components/ExerciseTable.vue';
 
+import { useApiClient } from '@/composables/useApiClient';
+
 const credentials = useCredentials();
 const theme = useTheme();
 
-const client = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    headers: {
-        'Authorization': `Bearer ${credentials.token}`
-    }
-});
+const { client } = useApiClient();
 document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
 
 const exercises = ref([]);

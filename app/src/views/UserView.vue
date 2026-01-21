@@ -7,17 +7,14 @@ import axios from 'axios';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 
+import { useApiClient } from '@/composables/useApiClient';
+
 const route = useRoute();
 const credentials = useCredentials();
 const router = useRouter();
 const isOwner = ref(false);
 
-const client = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    headers: {
-        'Authorization': `Bearer ${credentials.token}`
-    }
-});
+const { client } = useApiClient();
 
 const user_id = ref(route.params.id);
 const user_info = ref(null);
