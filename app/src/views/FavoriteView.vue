@@ -7,10 +7,11 @@ import axios from 'axios';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 
+import ExerciseTable from '@/components/ExerciseTable.vue';
+
 const credentials = useCredentials();
 const router = useRouter();
 const route = useRoute();
-const MAX_TAGS = 3;
 const limit = ref(10);
 const page = ref(0);
 
@@ -35,14 +36,8 @@ async function fetchFavorites() {
   }
 }
 
-async function prevPage() {
-  if (page.value === 0) return;
-  page.value--;
-  await fetchFavorites();
-}
-
-async function nextPage() {
-  page.value++;
+async function changePage(newPage) {
+  page.value = newPage;
   await fetchFavorites();
 }
 
@@ -59,58 +54,13 @@ onMounted(async () => {
       <h1>Favorites</h1>
       <div class="title-underline"></div>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Exercise</th>
-          <th>Author</th>
-          <th>Tags</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="exercise in exercises" :key="exercise.id">
-          <td><router-link
-            :to="`/exercise/${exercise.id}`"
-            class="exercise-link">
-            {{ exercise.name }}
-          </router-link>
-          </td>
-          <td><router-link
-            :to="`/user/${exercise.user_id}`"
-            class="user-link">
-            {{ exercise.username }}
-          </router-link></td>
-          <td class="tags-cell">
-            <span
-              v-for="tag in exercise.tags.slice(0, MAX_TAGS)"
-              :key="tag.id"
-              :class="['tag', tag.category]"
-            >
-              {{ tag.label }}
-            </span>
-            <span
-              v-if="exercise.tags.length > MAX_TAGS"
-              class="tag more"
-            >
-              +{{ exercise.tags.length - MAX_TAGS }}
-              <span class="tooltip">
-                {{ exercise.tags
-                  .slice(MAX_TAGS)
-                  .map(t => t.label)
-                  .join(', ') }}
-              </span>
-            </span>
-
-            <span v-if="exercise.tags.length === 0">—</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-        <div class="pagination">
-      <button @click="prevPage" :disabled="page === 0">Previous</button>
-      <span>Page {{ page + 1 }}</span>
-      <button @click="nextPage" :disabled="exercises.length < limit">Next</button>
-    </div>
+        <exercise-table
+      :exercises="exercises"
+      :page="page"
+      :limit="limit"
+      :show-author="true"
+      @change-page="changePage"
+    />
   </div>
   <Footer/>
 </template>

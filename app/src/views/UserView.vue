@@ -25,9 +25,13 @@ const message = ref('');
 const changeMessage = ref('');
 const deleteMessage = ref('');
 
-const MAX_TAGS = 3;
+
+
+import ExerciseTable from '@/components/ExerciseTable.vue';
 
 const exercises = ref([]);
+const page = ref(0);
+const limit = ref(10);
 
 const oldPassword = ref('')
 const newPassword = ref('')
@@ -35,11 +39,21 @@ const newPassword = ref('')
 
 async function fetchExercises() {
   try {
-    const response = await client.get(`/exercises/${user_id.value}`);
+    const response = await client.get(`/exercises/${user_id.value}`, {
+      params: {
+        limit: limit.value,
+        offset: page.value * limit.value
+      }
+    });
     exercises.value = response.data;
   } catch (error) {
     console.error('Error fetching exercises:', error);
   }
+}
+
+async function changePage(newPage) {
+  page.value = newPage;
+  await fetchExercises();
 }
 
 async function loadUser() {
@@ -123,50 +137,14 @@ onMounted(async () => {
       <div class="title-underline"></div>
     </div>
 
-<table>
-      <thead>
-        <tr>
-          <th>Exercise</th>
-          <th v-if="isOwner">Visibility</th>
-          <th>Tags</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="exercise in exercises" :key="exercise.id">
-          <td><router-link
-            :to="`/exercise/${exercise.id}`"
-            class="exercise-link">
-            {{ exercise.name }}
-          </router-link>
-          </td>
-          <td v-if="isOwner && exercise.is_public">🌍 Public</td>
-          <td v-else-if="isOwner">🔒 Private</td>
-          <td class="tags-cell">
-            <span
-              v-for="tag in exercise.tags.slice(0, MAX_TAGS)"
-              :key="tag.id"
-              :class="['tag', tag.category]"
-            >
-              {{ tag.label }}
-            </span>
-            <span
-              v-if="exercise.tags.length > MAX_TAGS"
-              class="tag more"
-            >
-              +{{ exercise.tags.length - MAX_TAGS }}
-              <span class="tooltip">
-                {{ exercise.tags
-                  .slice(MAX_TAGS)
-                  .map(t => t.label)
-                  .join(', ') }}
-              </span>
-            </span>
-
-            <span v-if="exercise.tags.length === 0">—</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <exercise-table
+      :exercises="exercises"
+      :page="page"
+      :limit="limit"
+      :is-owner="isOwner"
+      :show-visibility="true"
+      @change-page="changePage"
+    />
 
 <div v-if="isOwner" class="form-section" id="danger-zone">
   <h2 class="form-label danger-text" >Account Settings</h2>
