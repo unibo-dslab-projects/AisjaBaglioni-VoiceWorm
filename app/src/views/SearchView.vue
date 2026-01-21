@@ -12,23 +12,27 @@ import { useApiClient } from '@/composables/useApiClient';
 const credentials = useCredentials();
 const theme = useTheme();
 
-const { client } = useApiClient();
+const { client, withMinDelay } = useApiClient();
 document.body.setAttribute('data-theme', theme.darkMode ? 'dark' : 'light')
 
 const exercises = ref([]);
 const limit = ref(10);
 const page = ref(0);
 const searchQuery = ref('');
+const loading = ref(false);
 
 async function fetchExercises() {
+  loading.value = true;
   try {
-    const response = await client.get('/exercises', { params: { 
+    const response = await withMinDelay(client.get('/exercises', { params: { 
       limit: limit.value,
       offset: page.value * limit.value
-    } });
+    } }));
     exercises.value = response.data;
   } catch (error) {
     console.error('Error fetching exercises:', error);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -43,13 +47,16 @@ async function searchExercises() {
     return;
   }
 
+  loading.value = true;
   try {
-    const response = await client.get('/search/exercises', {
+    const response = await withMinDelay(client.get('/search/exercises', {
       params: { q: searchQuery.value, limit: limit.value, offset: page.value * limit.value }
-    });
+    }));
     exercises.value = response.data;
   } catch (error) {
     console.error('Error searching exercises:', error);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -117,6 +124,7 @@ onMounted(async () => {
       :exercises="exercises"
       :page="page"
       :limit="limit"
+      :loading="loading"
       :show-author="true"
       @change-page="changePage"
       @update:limit="changeLimit"

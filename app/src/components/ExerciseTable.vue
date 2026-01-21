@@ -59,7 +59,22 @@ function nextPage() {
         </tr>
       </thead>
       <tbody>
-        <tr v-if="exercises.length === 0">
+        <tr v-if="loading" v-for="i in limit" :key="'skeleton-' + i">
+          <td>
+             <span class="skeleton">Placeholder Exercise Name Width Wrapper</span>
+          </td>
+          <td v-if="showAuthor">
+             <span class="skeleton">User Name</span>
+          </td>
+          <td v-if="showVisibility">
+             <span class="skeleton">Visibility</span>
+          </td>
+          <td>
+             <span class="skeleton tag">Tag 1</span>
+             <span class="skeleton tag">Tag 2</span>
+          </td>
+        </tr>
+        <tr v-else-if="exercises.length === 0">
           <td :colspan="showAuthor || showVisibility ? 3 : 2" class="empty-state">
             No exercises found.
           </td>

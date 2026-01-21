@@ -14,7 +14,7 @@ const credentials = useCredentials();
 const router = useRouter();
 const isOwner = ref(false);
 
-const { client } = useApiClient();
+const { client, withMinDelay } = useApiClient();
 
 const user_id = ref(route.params.id);
 const user_info = ref(null);
@@ -29,22 +29,26 @@ import ExerciseTable from '@/components/ExerciseTable.vue';
 const exercises = ref([]);
 const page = ref(0);
 const limit = ref(10);
+const loading = ref(false);
 
 const oldPassword = ref('')
 const newPassword = ref('')
 
 
 async function fetchExercises() {
+  loading.value = true;
   try {
-    const response = await client.get(`/exercises/${user_id.value}`, {
+    const response = await withMinDelay(client.get(`/exercises/${user_id.value}`, {
       params: {
         limit: limit.value,
         offset: page.value * limit.value
       }
-    });
+    }));
     exercises.value = response.data;
   } catch (error) {
     console.error('Error fetching exercises:', error);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -144,6 +148,7 @@ onMounted(async () => {
       :exercises="exercises"
       :page="page"
       :limit="limit"
+      :loading="loading"
       :is-owner="isOwner"
       :show-visibility="true"
       @change-page="changePage"

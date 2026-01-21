@@ -16,20 +16,24 @@ const router = useRouter();
 const route = useRoute();
 const limit = ref(10);
 const page = ref(0);
+const loading = ref(false);
 
-const { client } = useApiClient();
+const { client, withMinDelay } = useApiClient();
 
 const exercises = ref([]);
 
 async function fetchFavorites() {
+  loading.value = true;
   try {
-      const response = await client.get('/favorites', { params: { 
-      limit: limit.value,
-      offset: page.value * limit.value
-    } });
+      const response = await withMinDelay(client.get('/favorites', { params: { 
+        limit: limit.value,
+        offset: page.value * limit.value
+      } }));
     exercises.value = response.data;
   } catch (error) {
     console.error('Error fetching favorites:', error);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -61,6 +65,7 @@ onMounted(async () => {
       :exercises="exercises"
       :page="page"
       :limit="limit"
+      :loading="loading"
       :show-author="true"
       @change-page="changePage"
       @update:limit="changeLimit"
