@@ -56,6 +56,12 @@ async function changePage(newPage) {
   await fetchExercises();
 }
 
+async function changeLimit(newLimit) {
+  limit.value = newLimit;
+  page.value = 0;
+  await fetchExercises();
+}
+
 async function loadUser() {
     try {
         const response = await client.get(`/user/${user_id.value}`);
@@ -144,6 +150,7 @@ onMounted(async () => {
       :is-owner="isOwner"
       :show-visibility="true"
       @change-page="changePage"
+      @update:limit="changeLimit"
     />
 
 <div v-if="isOwner" class="form-section" id="danger-zone">

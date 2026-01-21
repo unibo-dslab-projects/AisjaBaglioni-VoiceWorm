@@ -41,6 +41,12 @@ async function changePage(newPage) {
   await fetchFavorites();
 }
 
+async function changeLimit(newLimit) {
+  limit.value = newLimit;
+  page.value = 0;
+  await fetchFavorites();
+}
+
 
 onMounted(async () => {
   await fetchFavorites();
@@ -60,6 +66,7 @@ onMounted(async () => {
       :limit="limit"
       :show-author="true"
       @change-page="changePage"
+      @update:limit="changeLimit"
     />
   </div>
   <Footer/>

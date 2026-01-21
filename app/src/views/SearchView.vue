@@ -69,8 +69,8 @@ function reset() {
   fetchExercises();
 }
 
-function changeLimit(event) {
-  limit.value = Number(event.target.value);
+function changeLimit(newLimit) {
+  limit.value = newLimit;
   page.value = 0;
   fetchExercises();
 }
@@ -112,12 +112,7 @@ onMounted(async () => {
   <button type="submit">Search</button>
   <button @click="reset" >Reset</button>
 
-      <label for="limit-select">Results:</label>
-       <select id="limit-select" class="limit-select" @change="changeLimit" :value="limit">
-        <option :value="10">10</option>
-        <option :value="50">50</option>
-        <option :value="100">100</option>
-      </select>
+
 </form>
 
 
@@ -127,6 +122,7 @@ onMounted(async () => {
       :limit="limit"
       :show-author="true"
       @change-page="changePage"
+      @update:limit="changeLimit"
     />
   </div>
 

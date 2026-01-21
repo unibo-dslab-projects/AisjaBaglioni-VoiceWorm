@@ -30,7 +30,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['change-page']);
+const emit = defineEmits(['change-page', 'update:limit']);
 
 const MAX_TAGS = 3;
 
@@ -104,9 +104,22 @@ function nextPage() {
     <button @click="prevPage" :disabled="page === 0 || loading">Previous</button>
     <span>Page {{ page + 1 }}</span>
     <button @click="nextPage" :disabled="exercises.length < limit || loading">Next</button>
+    <div class="limit-selector">
+      <label for="limit-select">Results:</label>
+      <select id="limit-select" class="limit-select" :value="limit" @change="$emit('update:limit', Number($event.target.value))">
+        <option :value="10">10</option>
+        <option :value="50">50</option>
+        <option :value="100">100</option>
+      </select>
+    </div>
   </div>
 </template>
 
 <style scoped>
-
+.limit-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
 </style>
