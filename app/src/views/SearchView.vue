@@ -1,15 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useCredentials } from '@/stores/credentials';
 import { useTheme } from '@/stores/theme';
-import axios from 'axios';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 import ExerciseTable from '@/components/ExerciseTable.vue';
 
 import { useApiClient } from '@/composables/useApiClient';
 
-const credentials = useCredentials();
 const theme = useTheme();
 
 const { client, withMinDelay } = useApiClient();

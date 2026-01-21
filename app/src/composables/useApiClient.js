@@ -16,11 +16,6 @@ export function useApiClient() {
         return config;
     });
 
-    /**
-     * Ensures a promise takes at least a minimum amount of time to resolve.
-     * @param {Promise} promise - The promise to execute
-     * @param {number} ms - Minimum duration in ms (default 500)
-     */
     async function withMinDelay(promise, ms = 250) {
         return Promise.all([
             promise,

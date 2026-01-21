@@ -1,9 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useCredentials } from '@/stores/credentials';
-import { useRouter } from 'vue-router';
-import { useRoute } from 'vue-router';
-import axios from 'axios';
+import { ref, onMounted } from 'vue';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 
@@ -11,9 +7,6 @@ import ExerciseTable from '@/components/ExerciseTable.vue';
 
 import { useApiClient } from '@/composables/useApiClient';
 
-const credentials = useCredentials();
-const router = useRouter();
-const route = useRoute();
 const limit = ref(10);
 const page = ref(0);
 const loading = ref(false);

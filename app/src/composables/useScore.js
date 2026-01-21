@@ -1,32 +1,27 @@
 
-import { ref, computed, nextTick, watch } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import abcjs from "abcjs";
 import lodash from 'lodash';
 import { Input, Score, Note, Tuplet, Chord } from '@/lib/abcp';
 import { KEYS } from '@/lib/keys';
 
 export function useScore() {
-    // --- State ---
-    const userText = ref("X:1\nK:C\nT:Aisja\nL:1/4\nM:4/4\n|[ceg]z2cdcd|"); // Default
+    const userText = ref("X:1\nK:C\nT:Aisja\nL:1/4\nM:4/4\n|[ceg]z2cdcd|");
     const renderedText = ref(null);
 
-    // Synth / Playback
     const synth = ref(null);
     const isPaused = ref(false);
     const isPlaying = ref(false);
     const bpm = ref(85);
     let timer = null;
 
-    // Scrollbar
     const scrollbarLeft = ref(null);
     const scrollbarTop = ref(null);
     const scrollbarHeight = ref(null);
 
-    // Transposition Settings
     const ascendingSteps = ref(1);
     const descendingSteps = ref(1);
 
-    // Note Selection (C4 default) - using indices 0-11 and octaves
     const startingNote = ref(0);
     const startingOctave = ref(4);
     const highestNote = ref(0);
@@ -34,12 +29,10 @@ export function useScore() {
     const lowestNote = ref(0);
     const lowestOctave = ref(3);
 
-    // Computed Semitones
     const startingSemitones = computed(() => inputToSemitones(startingNote.value, startingOctave.value));
     const highestSemitones = computed(() => inputToSemitones(highestNote.value, highestOctave.value));
     const lowestSemitones = computed(() => inputToSemitones(lowestNote.value, lowestOctave.value));
 
-    // Manual Mode State
     const baseHeader = ref("");
     const baseBody = ref("");
     const manualStartOffset = ref(0);
@@ -48,10 +41,7 @@ export function useScore() {
     const manualStep = ref(0);
     const originalBarCount = computed(() => countOriginalBars());
 
-    // Debouncing
     const debouncedRender = lodash.debounce(renderScore, 250);
-
-    // --- Helpers ---
 
     function inputToSemitones(note, octave) {
         return (parseInt(octave)) * 12 + parseInt(note);
@@ -124,8 +114,6 @@ export function useScore() {
         const newBody = "|" + newBars.map(b => b.trim()).join("|") + "|";
         userText.value = header + "\n" + newBody;
     }
-
-    // --- Core Functions ---
 
     async function renderScore(elemId = "target") {
         stopSynthAndTimer();
@@ -237,14 +225,11 @@ export function useScore() {
         }
     }
 
-    // --- Transposition Logic ---
-
     function transposeAndRender() {
         isPaused.value = false;
         const { header, body } = splitAbcHeaderBody(userText.value);
         const key = getSheetKey(header);
 
-        // Create input and score
         let input = new Input(body);
         let score = Score.parse(input, KEYS[key.toUpperCase()]);
 
@@ -308,8 +293,6 @@ export function useScore() {
         renderScore();
     }
 
-    // --- Manual Mode Functions ---
-
     function defineBase() {
         const { header, body } = splitAbcHeaderBody(userText.value);
         baseHeader.value = header;
@@ -346,7 +329,7 @@ export function useScore() {
             let acc = lodash.cloneDeep(score);
             userText.value = baseHeader.value + "\n" + acc.generate();
         } else {
-            // logic for ascending/descending extension is distinct
+
         }
         renderScore();
     }
@@ -417,8 +400,6 @@ export function useScore() {
         renderScore();
     }
 
-    // --- Download Functions ---
-
     async function downloadWav() {
         if (!renderedText.value) return;
         const tempSynth = new abcjs.synth.CreateSynth();
@@ -429,7 +410,6 @@ export function useScore() {
         await tempSynth.prime();
         const audioBuffer = tempSynth.getAudioBuffer();
 
-        // helper to create WAV 
         function bufferToWave(abuffer) {
             const numOfChan = abuffer.numberOfChannels;
             const length = abuffer.length * numOfChan * 2 + 44;
@@ -467,8 +447,6 @@ export function useScore() {
     }
 
     function downloadSvg(elemSelector = "#target svg") {
-        // If called via event handler, elemSelector will be the Event object.
-        // In that case, use the default selector.
         if (typeof elemSelector !== 'string') {
             elemSelector = "#target svg";
         }

@@ -1,15 +1,12 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useCredentials } from '@/stores/credentials';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 import ExerciseForm from '@/components/ExerciseForm.vue';
 import { useApiClient } from '@/composables/useApiClient';
 
-const credentials = useCredentials();
 const router = useRouter();
 
 const { client } = useApiClient();

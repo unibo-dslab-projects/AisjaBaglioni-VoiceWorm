@@ -1,16 +1,13 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
-import { useCredentials } from '@/stores/credentials';
 import { useRouter, useRoute } from 'vue-router';
-import axios from 'axios';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 import ExerciseForm from '@/components/ExerciseForm.vue';
 
 import { useApiClient } from '@/composables/useApiClient';
 
-const credentials = useCredentials();
 const router = useRouter();
 const route = useRoute();
 
@@ -29,7 +26,6 @@ async function loadExercise() {
     try {
         const response = await client.get(`/exercise/${exercise_id.value}`);
         exercise_info.value = response.data;
-        isOwner.value = credentials.data.id == exercise_info.value.user_id;
     } catch (error) {
         message.value = error?.response?.data ?? 'Load exercise failed';
         console.error('Load exercise error:', error);
@@ -78,7 +74,6 @@ async function modifyExercise(data) {
             tag_ids: data.tag_ids
         });
         message.value = "Exercise updated successfully!";
-        // Reload to ensure sync
         await loadExercise();
     } catch (error) {
         message.value = error?.response?.data ?? 'Modify exercise failed';

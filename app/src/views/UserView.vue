@@ -1,19 +1,17 @@
 <script setup>
-import { useCredentials } from '@/stores/credentials';
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 
 import { useApiClient } from '@/composables/useApiClient';
+import { useCredentials } from '@/stores/credentials';
 
 const route = useRoute();
-const credentials = useCredentials();
 const router = useRouter();
 const isOwner = ref(false);
-
+const credentials = useCredentials();
 const { client, withMinDelay } = useApiClient();
 
 const user_id = ref(route.params.id);

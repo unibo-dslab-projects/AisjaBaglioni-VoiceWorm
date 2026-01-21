@@ -112,7 +112,6 @@ function toggleAutomaticMode() {
 }
 
 function handleSubmit() {
-  // Collect data and emit save
   const data = {
     name: exerciseName.value,
     abc: userText.value,
@@ -128,7 +127,6 @@ function handleSubmit() {
   emit('save', data);
 }
 
-// Initialize with data if provided (Edit Mode)
 watch(() => props.initialData, (newData) => {
   if (newData) {
     exerciseName.value = newData.name;
@@ -159,9 +157,7 @@ watch(() => props.initialData, (newData) => {
        newData.tags.forEach(tag => { selectedTags.value[tag.id] = true; });
     }
     
-    // Defer render to ensure DOM element exists if mounting
     renderScore();
-    // Set the base for reset functionality
     defineBase();
   }
 }, { immediate: true });
@@ -170,7 +166,6 @@ onMounted(() => {
     if (props.mode === 'create') {
         defineBase();
     }
-    // Need to ensure render happens after mount
     renderScore();
 });
 
@@ -249,7 +244,6 @@ watch(userText, () => {
         </div>
       </div>
 
-      <!-- Manual/Auto Modes (Owner Only) -->
       <div v-if="isOwner" class="modes-container">
         <div id="manual-section" class="form-section">
           <button class="manual-button" :class="{ 'active-mode': !showManualMode }" @click="toggleManualMode">
@@ -374,7 +368,6 @@ watch(userText, () => {
         </div>
       </div>
 
-      <!-- Tags Section -->
       <div class="form-section">
         <h2 class="form-label">Tags</h2>
         
@@ -404,7 +397,6 @@ watch(userText, () => {
         </div>
       </div>
 
-      <!-- Favorites Section (Edit Mode Only) -->
       <div v-if="mode === 'edit'" class="form-section">
         <h2 class="form-label">Favorites</h2>
         <div v-if="isFavorite">
@@ -422,7 +414,6 @@ watch(userText, () => {
         <p class="status-message">{{ favoritesMessage }}</p>
       </div>
 
-      <!-- Visibility and Actions (Owner Only) -->
       <div v-if="isOwner" class="form-section">
         <h2 class="form-label">Visibility</h2>
         <div class="visibility">
@@ -451,7 +442,6 @@ watch(userText, () => {
       </div>
     </div>
 
-    <!-- Sticky Preview -->
     <div class="preview-container">
       <div class="form-section" id="renderedscore">
         <h2 class="form-label">Rendered Score</h2>

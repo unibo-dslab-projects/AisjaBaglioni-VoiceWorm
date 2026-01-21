@@ -1,12 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { useCredentials } from '@/stores/credentials';
 import { useTheme } from '@/stores/theme';
 import { useRouter } from 'vue-router';
+import { useCredentials } from '@/stores/credentials';
+const credentials = useCredentials();
 const logoDark = '/logo_dark.svg';
 const logoWhite = '/logo_white.svg';
 
-const credentials = useCredentials();
 const theme = useTheme();
 const router = useRouter();
 const userDropdownOpen = ref(false);
