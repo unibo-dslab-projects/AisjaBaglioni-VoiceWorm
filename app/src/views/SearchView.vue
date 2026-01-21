@@ -119,7 +119,7 @@ onMounted(async () => {
   <button @click="reset" >Reset</button>
 
       <label for="limit-select">Results:</label>
-       <select id="limit-select" @change="changeLimit" :value="limit">
+       <select id="limit-select" class="limit-select" @change="changeLimit" :value="limit">
         <option :value="10">10</option>
         <option :value="50">50</option>
         <option :value="100">100</option>
@@ -189,98 +189,4 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-
-.search-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin: 20px 0;
-}
-
-.search-container input {
-  flex: 1;
-  min-width: 200px;
-  max-width: 400px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-.search-container input:focus {
-  outline: none;
-  border-color: #6c63ff;
-  box-shadow: 0 0 6px rgba(108, 99, 255, 0.3);
-}
-
-.search-container button {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  background-color: #6c63ff;
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.help-tooltip {
-  margin-left: 8px;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  cursor: default;
-  font-size: 1.2rem;
-}
-
-.help-tooltip i {
-  color: var(--text-color);
-  font-size: 1.2rem;
-}
-
-.tooltip-dropdown {
-  width: 300px;
-  position: absolute;
-  top: 35px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #7e7e7e;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  white-space: normal;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.help-tooltip:hover .tooltip-dropdown {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-#limit-select {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 0.9rem;
-  cursor: pointer;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-
-
 </style>

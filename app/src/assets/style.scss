@@ -177,6 +177,16 @@ body[data-theme="dark"] {
   color: var(--text-color);
 }
 
+.limit-select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
 // Table
 
 .table-wrapper {
@@ -219,6 +229,8 @@ tbody tr:nth-child(even) {
   max-width: 100%;
 }
 
+// Search and tooltips 
+
 .tooltip {
   min-width: 100px;
   max-width: 260px;
@@ -237,6 +249,86 @@ tbody tr:nth-child(even) {
   pointer-events: none;
   transition: opacity 0.15s ease;
   z-index: 10;
+}
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.search-container input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.search-container input:focus {
+  outline: none;
+  border-color: #6c63ff;
+  box-shadow: 0 0 6px rgba(108, 99, 255, 0.3);
+}
+
+.search-container button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background-color: #6c63ff;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.help-tooltip {
+  margin-left: 8px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: default;
+  font-size: 1.2rem;
+}
+
+.help-tooltip i {
+  color: var(--text-color);
+  font-size: 1.2rem;
+}
+
+.tooltip-dropdown {
+  width: 300px;
+  position: absolute;
+  top: 35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #7e7e7e;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: normal;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.help-tooltip:hover .tooltip-dropdown {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 // Title
@@ -695,3 +787,4 @@ tbody tr:nth-child(even) {
   color: var(--text-color);
   padding-top: 3px;
 }
+
