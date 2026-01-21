@@ -5,11 +5,19 @@ import { bearerAuth } from 'hono/bearer-auth'
 import { cors } from 'hono/cors'
 
 const app = new Hono()
+
 app.use('*', async (c, next) => {
-  if(c.env.PRODUCTION == "0")
-    return cors()(c, next)
-  else
-    await next()
+  if(c.env.PRODUCTION == "0") {
+    return cors({
+      origin: "*",
+      credentials: true
+    })(c, next)
+  } else {
+    return cors({
+      origin: "https://voiceworm.aisja.it",
+      credentials: true
+    })(c, next)
+  }
 })
 
 const auth = bearerAuth({
