@@ -3,8 +3,8 @@ import { ref, computed } from 'vue';
 import { useCredentials } from '@/stores/credentials';
 import { useTheme } from '@/stores/theme';
 import { useRouter } from 'vue-router';
-import logoDark from '@/assets/logo_dark.svg';
-import logoWhite from '@/assets/logo_white.svg';
+const logoDark = '/logo_dark.svg';
+const logoWhite = '/logo_white.svg';
 
 const credentials = useCredentials();
 const theme = useTheme();

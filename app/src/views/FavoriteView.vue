@@ -11,6 +11,8 @@ const credentials = useCredentials();
 const router = useRouter();
 const route = useRoute();
 const MAX_TAGS = 3;
+const limit = ref(10);
+const page = ref(0);
 
 const client = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -23,12 +25,27 @@ const exercises = ref([]);
 
 async function fetchFavorites() {
   try {
-    const response = await client.get('/favorites');
+      const response = await client.get('/favorites', { params: { 
+      limit: limit.value,
+      offset: page.value * limit.value
+    } });
     exercises.value = response.data;
   } catch (error) {
     console.error('Error fetching favorites:', error);
   }
 }
+
+async function prevPage() {
+  if (page.value === 0) return;
+  page.value--;
+  await fetchFavorites();
+}
+
+async function nextPage() {
+  page.value++;
+  await fetchFavorites();
+}
+
 
 onMounted(async () => {
   await fetchFavorites();
@@ -89,6 +106,11 @@ onMounted(async () => {
         </tr>
       </tbody>
     </table>
+        <div class="pagination">
+      <button @click="prevPage" :disabled="page === 0">Previous</button>
+      <span>Page {{ page + 1 }}</span>
+      <button @click="nextPage" :disabled="exercises.length < limit">Next</button>
+    </div>
   </div>
   <Footer/>
 </template>

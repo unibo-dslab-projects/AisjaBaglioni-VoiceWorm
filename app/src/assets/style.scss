@@ -43,25 +43,14 @@ body[data-theme="dark"] {
   --automatic-color: rgb(34, 129, 208);
 }
 
-body[data-theme="dark"] button.dark-toggle {
-  color: var(--text-color);
-}
-
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
 }
 
-.page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;       
-  min-height: 100vh;        
-  gap: 20px;                
-  padding: 20px;             
-  box-sizing: border-box;
+body[data-theme="dark"] button.dark-toggle {
+  color: var(--text-color);
 }
-
 
 header {
   display: flex;
@@ -83,6 +72,16 @@ footer {
   box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08);
   font-size: 0.9rem;
   color: var(--text-color);
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;       
+  min-height: 100vh;        
+  gap: 20px;                
+  padding: 20px;             
+  box-sizing: border-box;
 }
 
 //Tags 
@@ -154,16 +153,16 @@ body[data-theme="dark"] {
 .pagination button {
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid #6c63ff;
+  border: 1px solid var(--accent-color);
   background-color: var(--pagination-bg);
-  color: #6c63ff;
+  color: var(--accent-color);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .pagination button:hover:not(:disabled) {
-  background-color: #6c63ff;
+  background-color: var(--accent-color);
   color: white;
 }
 
@@ -184,7 +183,6 @@ body[data-theme="dark"] {
   padding-top: 20px;
   padding-bottom: 20px;
 }
-
 
 table {
   width: 80%;
@@ -219,9 +217,6 @@ tbody tr:nth-child(even) {
 
 .tags-cell {
   max-width: 100%;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 .tooltip {
@@ -328,7 +323,7 @@ tbody tr:nth-child(even) {
 }
 
 .access-form button[type="submit"]:hover {
-  background-color: #6c63ff;
+  background-color: var(--accent-color);
 }
 
 .switchto, .errormessage {
@@ -384,19 +379,9 @@ tbody tr:nth-child(even) {
   margin: 20px;
 }
 
-.form-input {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color, #ccc);
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
 .form-input:focus {
   outline: none;
-  border-color: var(--accent-color, #6c63ff);
+  border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.15);
 }
 
@@ -437,7 +422,7 @@ tbody tr:nth-child(even) {
 
 .exercise-text:focus {
   outline: none;
-  border-color: var(--accent-color, #6c63ff);
+  border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.15);
 }
 
@@ -445,7 +430,7 @@ tbody tr:nth-child(even) {
   margin-top: 10px;
   padding: 10px 16px;
   border-radius: 8px;
-  border: 2px solid var(--accent-color, #6c63ff);
+  border: 2px solid var(--accent-color);
   background-color: transparent;
   color: var(--accent-color, #6c63ff);
   font-weight: 500;
@@ -454,7 +439,7 @@ tbody tr:nth-child(even) {
 }
 
 .enter-button:hover {
-  background-color: var(--accent-color, #6c63ff);
+  background-color: var(--accent-color);
   color: #fff;
 }
 
@@ -596,7 +581,7 @@ tbody tr:nth-child(even) {
 }
 
 #submit-button {
-  background-color: #6c63ff;
+  background-color: var(--accent-color);
   color: white;
   border: none;
   padding: 8px 18px;
