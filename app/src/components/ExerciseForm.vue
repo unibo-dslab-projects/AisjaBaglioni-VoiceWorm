@@ -422,8 +422,9 @@ watch(userText, () => {
           <input type="radio" id="private" :value="0" v-model="visibility" />
           <label for="private">Private</label>
         </div>
+      </div>
 
-        <div class="form-section">
+      <div v-if="isOwner" class="form-section">
            <div v-if="mode === 'create'">
               <button id="submit-button" @click="handleSubmit">Submit Exercise</button>
               <div v-if="message" class="status-message">{{ message }}</div>
@@ -439,7 +440,6 @@ watch(userText, () => {
                </div>
            </div>
         </div>
-      </div>
     </div>
 
     <div class="preview-container">
