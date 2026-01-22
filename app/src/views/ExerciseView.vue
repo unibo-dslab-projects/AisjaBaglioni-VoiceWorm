@@ -6,12 +6,14 @@ import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 import ExerciseForm from '@/components/ExerciseForm.vue';
 
+import { useCredentials } from '@/stores/credentials';
 import { useApiClient } from '@/composables/useApiClient';
 
 const router = useRouter();
 const route = useRoute();
 
 const { client } = useApiClient();
+const credentials = useCredentials();
 
 const exercise_id = ref(route.params.id);
 const exercise_info = ref(null);
@@ -26,6 +28,11 @@ async function loadExercise() {
     try {
         const response = await client.get(`/exercise/${exercise_id.value}`);
         exercise_info.value = response.data;
+        if (credentials.isAuthenticated && exercise_info.value.user_id === credentials.data.id) {
+            isOwner.value = true;
+        } else {
+            isOwner.value = false;
+        }
     } catch (error) {
         message.value = error?.response?.data ?? 'Load exercise failed';
         console.error('Load exercise error:', error);
