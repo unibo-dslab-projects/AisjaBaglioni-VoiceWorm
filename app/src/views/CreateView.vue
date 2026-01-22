@@ -9,10 +9,11 @@ import { useApiClient } from '@/composables/useApiClient';
 
 const router = useRouter();
 
-const { client } = useApiClient();
+const { client, withMinDelay } = useApiClient();
 
 const message = ref('');
 const allTags = ref([]);
+const loading = ref(true);
 
 async function submitExercise(data) {
   try {
@@ -46,14 +47,17 @@ async function fetchTags() {
 }
 
 onMounted(async () => {
-   allTags.value = await fetchTags();
+   loading.value = true;
+   allTags.value = await withMinDelay(fetchTags());
+   loading.value = false;
 });
 </script>
 
 <template>
     <Header/>
     <div class="page">
-      <ExerciseForm 
+      <ExerciseForm
+        v-if="!loading"
         mode="create" 
         :all-tags="allTags"
         :message="message"

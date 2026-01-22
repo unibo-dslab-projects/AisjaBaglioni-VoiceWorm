@@ -12,7 +12,7 @@ import { useApiClient } from '@/composables/useApiClient';
 const router = useRouter();
 const route = useRoute();
 
-const { client } = useApiClient();
+const { client, withMinDelay } = useApiClient();
 const credentials = useCredentials();
 
 const exercise_id = ref(route.params.id);
@@ -23,10 +23,12 @@ const delete_message = ref('');
 const favorites_message = ref('');
 const is_favorite = ref(false);
 const allTags = ref([]);
+const loading = ref(true);
 
 async function loadExercise() {
+    loading.value = true;
     try {
-        const response = await client.get(`/exercise/${exercise_id.value}`);
+        const response = await withMinDelay(client.get(`/exercise/${exercise_id.value}`));
         exercise_info.value = response.data;
         if (credentials.isAuthenticated && exercise_info.value.user_id === credentials.data.id) {
             isOwner.value = true;
@@ -36,6 +38,8 @@ async function loadExercise() {
     } catch (error) {
         message.value = error?.response?.data ?? 'Load exercise failed';
         console.error('Load exercise error:', error);
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -140,7 +144,7 @@ watch(
     <Header/>
     <div class="page">
       <ExerciseForm 
-        v-if="exercise_info"
+        v-if="!loading && exercise_info"
         mode="edit" 
         :initial-data="exercise_info"
         :is-owner="isOwner"
@@ -153,7 +157,7 @@ watch(
         @delete="deleteExercise"
         @toggle-favorite="toggleFavorite"
       />
-      <div v-else>Loading...</div>
+      <div v-else-if="!loading">Exercise not found</div>
     </div>
     <Footer/>
 </template>
