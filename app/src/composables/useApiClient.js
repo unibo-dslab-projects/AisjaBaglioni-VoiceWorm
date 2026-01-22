@@ -16,7 +16,7 @@ export function useApiClient() {
         return config;
     });
 
-    async function withMinDelay(promise, ms = 250) {
+    async function withMinDelay(promise, ms = 100) {
         return Promise.all([
             promise,
             new Promise(resolve => setTimeout(resolve, ms))
