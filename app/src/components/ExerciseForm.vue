@@ -294,7 +294,7 @@ watch(userText, () => {
                 </div>
                 <div class="nextsteps">
                 <button class="action-button danger-button" @click="resetToLastSaved">Reset</button>
-                <button class="action-button" @click="finishManualStep">Finish</button>
+                <button class="action-button" @click="finishManualStep(); showManualMode = false">Finish</button>
                 </div>
               </div>
           </div>
